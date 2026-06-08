@@ -1,0 +1,30 @@
+## Angular gitignore
+
+# Dependencies
+/node_modules/
+
+# Build
+/dist/
+/.angular/cache/
+
+# Environment (secrets)
+src/environments/environment.local.ts
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Testing
+/coverage/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Claude Code
+.claude/
+
+# Editor temporaries
+*.swo
+*~
