@@ -21,8 +21,7 @@
 | [`docs/system_spec/05-routes/`](docs/system_spec/05-routes) | Rotas & guards |
 | [`docs/system_spec/06-config.md`](docs/system_spec/06-config.md) | Configuração e build targets |
 | [`docs/system_spec/07-testing.md`](docs/system_spec/07-testing.md) | Convenções de testes (Vitest) |
-| [`docs/WORKFLOW.md`](docs/WORKFLOW.md) | Workflow de desenvolvimento assistido por IA (Commands → Skills → Agents), fases e checkpoints |
-| [`docs/process-warnings.md`](docs/process-warnings.md) | Avisos de processo — verificar no início de cada sessão |
+| [`docs/WORKFLOW.md`](docs/WORKFLOW.md) | Workflow de desenvolvimento assistido por IA (Commands → Skills → Agentes), fases e checkpoints humanos |
 | [`CHANGELOG.md`](CHANGELOG.md) | Histórico de alterações por issue/versão |
 
 ## Stack
@@ -83,12 +82,6 @@ ng lint                              # ESLint + angular-eslint
 ng build --configuration=production  # build de produção
 ng test --watch=false                # Vitest
 ```
-
-## Workflow (desenvolvimento assistido por IA)
-
-Cada issue percorre Brief → Spec → Plano → Código → Testes → Debrief → SYSTEM_SPEC → Changelog → PR,
-com checkpoints humanos obrigatórios. O workflow (Commands → Skills → Agents) **não** é explicado aqui —
-detalhe completo em [`docs/WORKFLOW.md`](docs/WORKFLOW.md).
 
 ## Relacionado
 

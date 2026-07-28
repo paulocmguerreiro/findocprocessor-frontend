@@ -25,6 +25,11 @@ Thumbs.db
 # Claude Code — workflow (commands/skills) versionado; settings locais fora
 .claude/settings.local.json
 
+# Claude Code — ficheiros de workflow LOCAIS (não versionar; alinhado com o repo Laravel canónico)
+docs/process-warnings.md
+docs/process-warnings-concluidos.md
+docs/workflow-state.md
+
 # Editor temporaries
 *.swo
 *~
