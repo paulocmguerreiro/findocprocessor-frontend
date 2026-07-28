@@ -7,7 +7,10 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "lint": "ng lint"
+    "lint": "ng lint",
+    "sync:contract": "npx -y openapi-typescript@^7 http://findocprocessor-backend-laravel.test/openapi.yaml -o src/app/contrato/api.generated.ts && node scripts/gen-models.mjs",
+    "sync:contract:github": "npx -y openapi-typescript@^7 https://raw.githubusercontent.com/paulocmguerreiro/findocprocessor-backend-laravel/main/openapi.yaml -o src/app/contrato/api.generated.ts && node scripts/gen-models.mjs",
+    "gen:models": "node scripts/gen-models.mjs"
   },
   "private": true,
   "packageManager": "npm@11.12.1",
