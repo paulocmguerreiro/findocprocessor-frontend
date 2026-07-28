@@ -1,5 +1,6 @@
 # FinDocProcessor — Frontend Angular (WIP)
 
+[![CI](https://github.com/paulocmguerreiro/findocprocessor-frontend/actions/workflows/ci.yml/badge.svg)](https://github.com/paulocmguerreiro/findocprocessor-frontend/actions/workflows/ci.yml)
 ![Angular 22](https://img.shields.io/badge/Angular-22-DD0031?logo=angular&logoColor=white)
 ![TypeScript strict](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)
 ![Vitest](https://img.shields.io/badge/testes-Vitest-6E9F18?logo=vitest&logoColor=white)
