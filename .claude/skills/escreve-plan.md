@@ -1,0 +1,77 @@
+# Skill: escreve-plan
+
+Decompõe a Spec em tarefas concretas, ordenadas e commitáveis individualmente.
+
+> **Categoria:** escreve  
+> **Usado em:** `/planeia-issue` (passo 9)  
+> **Produz:** `docs/plans/YYYY-MM-DD-<slug>.md`
+
+## Contrato
+
+**Input:**
+- `docs/specs/YYYY-MM-DD-<slug>.md` — incluindo `## Dependências` e `## Riscos`
+- `docs/briefs/YYYY-MM-DD-<slug>.md` — para herdar `## Riscos identificados` não capturados na Spec
+- Seção `## ARQUITETURA` do `CLAUDE.md` do repo ativo
+
+**Output:** `docs/plans/YYYY-MM-DD-<slug>.md`
+
+**Usado em:** `/planeia-issue` (passo 9)
+
+---
+
+## Formato do Plano
+
+```markdown
+# Plano: <título>
+
+**Issue:** #N
+**Spec:** docs/specs/YYYY-MM-DD-<slug>.md
+**Data:** YYYY-MM-DD
+
+## Tarefas
+
+### Tarefa 1 — <título>
+- Ficheiros a criar/alterar: [lista]
+- O que implementar: [detalhe técnico]
+- Testes associados: [lista]
+- Commit: `<type>(<scope>): <descrição>`
+
+### Tarefa 2 — <título>
+...
+
+## Ordem de implementação
+
+1. [Tarefa N] — porque [dependência]
+2. [Tarefa M] — porque [dependência]
+
+## Testes a escrever
+
+| Teste | Tipo | Ficheiro | Verifica |
+| ----- | ---- | -------- | -------- |
+| ...   | unit | ...      | ...      |
+
+## Dependências
+- Issues bloqueantes: [#N — título | "nenhuma"]
+- Deve ser implementada após: [#N | "nenhuma"]
+
+## Riscos de implementação
+> Consolidados do Brief (`## Riscos identificados`) e da Spec — não apagar riscos do Brief.
+- [risco 1]
+
+## O que NÃO fazer nesta issue
+- [limite explícito 1]
+```
+
+---
+
+## Regras
+- Cada tarefa é independente e commitável isoladamente
+- A ordem respeita dependências entre camadas: `models (contrato) → core (services/interceptors/tokens) → state (signal stores) → features (componentes/rotas)`
+- Testes escritos na mesma tarefa que o código (não numa tarefa separada "adicionar testes")
+- Nunca antecipar tarefas de issues futuras
+- **Nunca incluir uma tarefa de "Documentação `system_spec`"** (nem como última tarefa, nem noutra
+  posição). Atualizar `docs/system_spec/*.md` é responsabilidade exclusiva da Fase 3a
+  (`/documenta-implementacao` → skill `atualiza-spec`), informada pelo Debrief — que só existe
+  depois da implementação e captura decisões/aprendizagens que o Plano não pode prever (ex.: desvios
+  de tipagem, ajustes a convenções descobertos durante o código). Documentar o system_spec já na
+  Fase 2 antecipa esse trabalho com informação incompleta e esvazia o propósito da Fase 3a.
