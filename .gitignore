@@ -22,8 +22,8 @@ src/environments/environment.local.ts
 .DS_Store
 Thumbs.db
 
-# Claude Code
-.claude/
+# Claude Code — workflow (commands/skills) versionado; settings locais fora
+.claude/settings.local.json
 
 # Editor temporaries
 *.swo

@@ -6,6 +6,13 @@ const angular = require("angular-eslint");
 
 module.exports = defineConfig([
   {
+    // src/app/contrato/ é totalmente GERADO a partir do contrato do backend
+    // (openapi-typescript + scripts/gen-models.mjs). Não editar à mão e não lintar.
+    // src/app/models/ (modelos à mão, só-Angular) NÃO é ignorado — é lintado normalmente.
+    // Ver docs/system_spec/02-shared/contrato-api.md.
+    ignores: ["src/app/contrato/**/*.ts"],
+  },
+  {
     files: ["**/*.ts"],
     extends: [
       eslint.configs.recommended,
