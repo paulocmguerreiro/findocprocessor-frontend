@@ -33,6 +33,7 @@ ficheiro em causa **em tempo real**, para nunca ficar desatualizada quando o spe
 | Model / enum / tipo (`*.model.ts`, `models/`) | `03-models/00-convencoes-models.md` + `02-shared/contrato-api.md` (contrato é gerado — backend-first) |
 | Rota (`*.routes.ts`)                          | `05-routes/*.md` (lazy `loadComponent`)                                                               |
 | Teste (`*.spec.ts`)                           | `07-testing.md` (+ o spec do tipo de ficheiro sob teste)                                              |
+| Configuração de qualidade (`eslint.config.js`, Prettier) | `06-config.md` (paridade de configuração) + o spec do tipo de ficheiro que a regra visa |
 | _(qualquer ficheiro `.ts`)_                   | `02-shared/convencoes-nomenclatura.md` — **sempre**, nomenclatura é transversal                       |
 
 Se um tipo de ficheiro não constar da tabela (categoria nova no repositório), acrescentar uma linha

@@ -52,7 +52,10 @@ Formata e propõe uma mensagem de commit em conventional commits com emoji, em p
 
 ## Scopes
 
-`features`, `shared`, `models`, `infra`, `routes`, `jobs`, `tests`
+`features`, `shared`, `state`, `models`, `infra`, `routes`, `jobs`, `tests`
+
+`state` cobre os signal stores de `src/app/state/` — camada própria do Angular, sem equivalente na
+lista herdada do repo Laravel.
 
 ---
 
