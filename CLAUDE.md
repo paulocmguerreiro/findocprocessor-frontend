@@ -254,7 +254,7 @@ loading após implementar a issue. Não omitir nem preencher com "N/A".
 ```bash
 ng lint                              # ESLint + angular-eslint
 ng build --configuration=production  # build de produção
-ng test --watch=false                # Vitest
+ng test --coverage --watch=false     # Vitest, com cobertura
 npm run sync:contract                # regenerar tipos a partir do contrato do backend
 ```
 
@@ -262,7 +262,7 @@ CI gates obrigatórios (mesma sequência corre localmente antes de publicar):
 
 1. `ng lint`
 2. `ng build --configuration=production`
-3. `ng test --watch=false`
+3. `ng test --coverage --watch=false`
 
 ---
 
