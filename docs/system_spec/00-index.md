@@ -35,6 +35,7 @@ forem construídas (ver `01-features/README.md`).
 | Interceptors  | `04-core/interceptors.md` |
 | Tokens        | `04-core/tokens.md`       |
 | SSE           | `04-core/sse.md`          |
+| Sessão ativa  | `04-core/sessao-ativa.md` |
 
 ## Rotas (`05-routes/`)
 

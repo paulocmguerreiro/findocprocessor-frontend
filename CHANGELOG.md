@@ -7,6 +7,11 @@ Formato: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ## [Unreleased]
 
 ### Added
+- **`SessaoAtivaStore`** (`src/app/state/`) — primeiro signal store do projeto: guarda o bearer token da
+  sessão em memória (sem persistência), expõe-o em leitura readonly e deriva `estaAutenticado` por
+  `computed()`. Sem HTTP e sem dependências injetadas (#5)
+- Regra de lint de projeto que restringe a leitura do bearer token a `src/app/core/interceptors/**` —
+  qualquer outra leitura faz `ng lint` (e o CI) falhar (#5)
 - Estrutura inicial do projeto (scaffolding) e **workflow assistido por IA** adaptado do backend Laravel
   (fonte canónica): comandos (`/cria-issue`, `/planeia-issue`, `/implementa-plano`,
   `/documenta-implementacao`, `/publica-implementacao`, `/mostra-workflow`) e skills reais em `.claude/`,
@@ -29,6 +34,9 @@ Formato: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - **Componentes:** template e estilos **sempre** em ficheiros separados (nunca inline)
 - **Grafia AO90** (norma em vigor) em todo o texto e identificadores de domínio
 - `src/app/app.ts` deixou de opt-out do OnPush; `eslint.config.js` ignora `src/app/contrato/` (gerado)
+- **Padrão de signal store** (`02-shared/padroes-signals.md`): decorador passa a `@Service()` quando é
+  root (`@Injectable()` caso contrário), estado privado em campo privado nativo (`#nome`, não `_nome`)
+  e leitura pública por `asReadonly()` em vez de `computed()` (#5)
 
 ### Removed
 - Rotas e features especulativas do `system_spec` — documentam-se **quando forem implementadas**
