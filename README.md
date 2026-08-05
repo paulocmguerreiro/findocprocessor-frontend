@@ -17,7 +17,7 @@
 | [`docs/system_spec/01-features/`](docs/system_spec/01-features) | Features (componentes, rota, camadas) — documentadas à medida que são construídas |
 | [`docs/system_spec/02-shared/`](docs/system_spec/02-shared) | Convenções (nomenclatura, camadas), contrato da API, envelope de erro, estados, padrões |
 | [`docs/system_spec/03-models/`](docs/system_spec/03-models) | Convenções de models (contrato gerado vs modelos à mão) |
-| [`docs/system_spec/04-core/`](docs/system_spec/04-core) | Services HTTP, interceptors, tokens, SSE |
+| [`docs/system_spec/04-core/`](docs/system_spec/04-core) | Services HTTP, interceptors, tokens, SSE, sessão ativa |
 | [`docs/system_spec/05-routes/`](docs/system_spec/05-routes) | Rotas & guards |
 | [`docs/system_spec/06-config.md`](docs/system_spec/06-config.md) | Configuração e build targets |
 | [`docs/system_spec/07-testing.md`](docs/system_spec/07-testing.md) | Convenções de testes (Vitest) |

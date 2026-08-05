@@ -13,14 +13,16 @@ Ordem de dependência: `contrato → models → core → state → features`. Um
 - **Fronteira:** view-models específicos de **uma** feature ficam na feature, não aqui. O que vem da API vive em `contrato/`, nunca aqui.
 
 ## `src/app/core/` — services, interceptors, tokens
-- **Services** (`core/services/`): acesso HTTP à API; uma responsabilidade cada; `providedIn: 'root'`. Devolvem/consomem tipos de `contrato/`. Sem estado de UI.
+- **Services** (`core/services/`): acesso HTTP à API; uma responsabilidade cada; `@Service()` quando é root, `@Injectable()` caso contrário (ver `padroes-signals.md`). Devolvem/consomem tipos de `contrato/`. Sem estado de UI.
 - **Interceptors** (`core/interceptors/`): transversais (erros 409 → toast, headers). Ver `04-core/interceptors.md`.
 - **Tokens** (`core/`): `InjectionToken` (`API_URL`). Ver `04-core/tokens.md`.
 - **Contrato:** core não conhece componentes; expõe APIs tipadas para state/features.
 
 ## `src/app/state/` — signal stores
-- Estado partilhado da aplicação em stores singleton (`providedIn: 'root'`).
+- Estado partilhado da aplicação em stores singleton (`@Service()` — ver `padroes-signals.md`).
 - Consome `core/services`; expõe signals `readonly` + `computed` + métodos de mutação (`set`/`update`).
+- Um store pode não ter dependência nenhuma — o `SessaoAtivaStore` é só custódia de estado, sem HTTP
+  (ver `04-core/sessao-ativa.md`).
 - **SSE só aqui** (`SseStore`) — nunca em componentes. Ver `04-core/sse.md`.
 - **Contrato:** state não conhece componentes; features lêem signals e chamam métodos.
 
