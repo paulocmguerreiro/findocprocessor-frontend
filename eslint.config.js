@@ -38,6 +38,33 @@ module.exports = defineConfig([
           style: "kebab-case",
         },
       ],
+      // O bearer token da sessão só pode ser lido onde é anexado ao pedido HTTP.
+      // Ancorado no nome distintivo `tokenParaAutorizacao` (ver o comentário
+      // "NÃO RENOMEAR" em src/app/state/sessao-ativa.store.ts): ancorar em
+      // `.token` colidiria com o desembrulhar de Token['data']['token'].
+      // Barreira de análise estática — cai perante um eslint-disable; serve
+      // para que a leitura indevida rebente o CI, não para a impedir.
+      "no-restricted-syntax": [
+        "error",
+        {
+          selector: 'MemberExpression[property.name="tokenParaAutorizacao"]',
+          message:
+            "Leitura do bearer token restrita a src/app/core/interceptors/**. Injeta o SessaoAtivaStore e usa estaAutenticado() se só precisas de saber se há sessão.",
+        },
+      ],
+    },
+  },
+  {
+    // Exceção à regra acima — tem de vir DEPOIS do bloco que a define (em flat
+    // config vence o último a aplicar-se). Delimitada aos ficheiros concretos:
+    // uma exceção a **/*.spec.ts deixaria qualquer teste ler o token e tornava
+    // a regra decorativa.
+    files: [
+      "src/app/core/interceptors/**/*.ts",
+      "src/app/state/sessao-ativa.store.spec.ts",
+    ],
+    rules: {
+      "no-restricted-syntax": "off",
     },
   },
   {
