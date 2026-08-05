@@ -7,6 +7,10 @@
 > O workflow é o mesmo de todos os repos do projeto (fonte canónica: backend Laravel),
 > com as **ações específicas do Angular** — testes com `ng test`, qualidade com `ng lint` +
 > `ng build`, documentação via MCP `angular`, e o contrato consumido do backend (nunca autorado).
+>
+> Leitura sequencial: as **3 camadas** e as **skills** dão a base; `/mostra-workflow` orienta
+> (onde estou / por onde começar); o **ciclo de uma issue** (comandos por fase → grafo →
+> checkpoints) é o trabalho em si; `/ajusta-workflow` fecha, corrigindo o próprio processo.
 
 ## Topologia dos repositórios
 
@@ -166,17 +170,31 @@ Laravel. Quando uma issue consome rotas/models/enums novos, o contrato prepara-s
 backend e depois entra aqui via `npm run sync:contract` (skill `sincroniza-contrato`, corrida na
 Fase 3a). Detalhe: `docs/system_spec/02-shared/contrato-api.md`.
 
-## Ajustar o processo (manual)
+## Ajustar o processo — `/ajusta-workflow`
 
-Quando algo no workflow falhou, foi esquecido, ou uma convenção melhorou, o ajuste vai para o local
-certo — **nunca** despejado em `CLAUDE.md` ou na memória. Classificar a natureza da mudança:
+Quando algo no workflow falhou, foi esquecido, ou uma convenção melhorou, `/ajusta-workflow`
+**classifica** a natureza da mudança e aplica-a no local certo — nunca a despeja em `CLAUDE.md`
+ou na memória. Como `/mostra-workflow`, é **transversal** (invocável em qualquer momento) e
+fecha frequentemente um aviso pendente (`WRN-NNN`) de `docs/process-warnings.md`.
+
+O comando classifica cada ajuste num destes tipos e daí deriva o destino:
 
 | Tipo  | Natureza da mudança                                                                            | Destino                                  |
 | ----- | ---------------------------------------------------------------------------------------------- | ---------------------------------------- |
-| **A** | Comportamento de workflow — como o agente age, checkpoints, sequência, quando perguntar/parar  | `.claude/commands/` ou `.claude/skills/` |
-| **B** | Conhecimento estrutural da app — padrões, contratos, ciclos de estado, como o sistema funciona | `docs/system_spec/` (seção relevante)   |
-| **C** | Convenção de codificação — naming, tipagem, estrutura de ficheiros                             | `docs/system_spec/02-shared/`            |
+| **A** | Instrução de agente / comportamento de workflow — como o agente age, checkpoints, sequência, quando perguntar/parar | `.claude/commands/` ou `.claude/skills/` |
+| **B** | Conhecimento estrutural da aplicação — padrões arquiteturais, contratos, ciclos de estado, como o sistema funciona | `docs/system_spec/` (seção relevante)   |
+| **C** | Convenção de codificação — naming, tipagem, estrutura de ficheiros que todo o código de domínio segue | `docs/system_spec/02-shared/`            |
 | **D** | Misto — componentes em múltiplos locais                                                        | combinação dos acima                     |
 
 > `CLAUDE.md` é destino de **último recurso** — só para comportamento do agente que não caiba em
 > commands/skills.
+
+**Exemplo:**
+
+```
+> /ajusta-workflow falta cobertura de testes configurada no ng test
+
+→ Tipo C/B: convenção de qualidade → CLAUDE.md (gates de CI) + system_spec/07-testing.md
+→ Aplicado em CLAUDE.md e docs/system_spec/07-testing.md
+→ WRN-001 marcado STATUS: RESOLVIDO em docs/process-warnings.md
+```
