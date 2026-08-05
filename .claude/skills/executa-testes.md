@@ -18,11 +18,13 @@ Executa os testes do stack ativo (Angular) e reporta o resultado. Auto-retry at�
 
 ## Comando
 
-| Stack   | Comando                          | Padrão de ficheiros  |
-| ------- | -------------------------------- | -------------------- |
-| angular | `ng test --watch=false` (Vitest) | `**/*.spec.ts`       |
+| Stack   | Comando                                    | Padrão de ficheiros  |
+| ------- | ------------------------------------------- | -------------------- |
+| angular | `ng test --coverage --watch=false` (Vitest) | `**/*.spec.ts`       |
 
-> O gate completo de qualidade (paridade com o CI) é `ng lint` + `ng build --configuration=production` + `ng test --watch=false`. Esta skill corre os **testes**; o gate lint+build é executado no passo seguinte de `/implementa-plano`.
+> O gate completo de qualidade (paridade com o CI) é `ng lint` + `ng build --configuration=production` + `ng test --coverage --watch=false`. Esta skill corre os **testes**; o gate lint+build é executado no passo seguinte de `/implementa-plano`.
+> A flag `--coverage` é redundante (`coverage: true` já é opção fixa do target `test` no
+> `angular.json`) — mantém-se explícita no comando por legibilidade.
 
 ---
 
@@ -39,7 +41,7 @@ Executa os testes do stack ativo (Angular) e reporta o resultado. Auto-retry at�
 
 ## Comportamento
 
-1. Executar o `TEST_RUNNER` do `CLAUDE.md` (`ng test --watch=false`)
+1. Executar o `TEST_RUNNER` do `CLAUDE.md` (`ng test --coverage --watch=false`)
 2. Se falhar → aguardar 2s e tentar novamente (máximo 3 tentativas)
 3. Se persistir após 3 tentativas → skill `regista-aviso` com WRN-NNN + avisar utilizador:
    ```

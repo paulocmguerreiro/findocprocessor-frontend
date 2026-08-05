@@ -95,7 +95,7 @@ Skill `propoe-commit` — proposta formatada, aguarda confirmação antes de exe
 
 ## Após todas as tarefas
 
-1. Skill `executa-testes` — `ng test --watch=false` (Vitest); auto-retry até 3x; se persistir → skill `regista-aviso`
+1. Skill `executa-testes` — `ng test --coverage --watch=false` (Vitest); auto-retry até 3x; se persistir → skill `regista-aviso`
 2. **Gate lint + build** — `ng lint` **e** `ng build --configuration=production` têm de passar (paridade com o CI). Se falhar → pausar e reportar; não avançar.
 3. Skill `pausa-checkpoint` tipo=② — resumo de implementação + confirmação antes de avançar
 4. Atualizar `docs/workflow-state.md`:

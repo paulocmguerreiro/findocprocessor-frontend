@@ -5,7 +5,7 @@
 ```
 STACK:        angular
 GITHUB_REPO:  paulocmguerreiro/findocprocessor-frontend
-TEST_RUNNER:  ng test --watch=false
+TEST_RUNNER:  ng test --coverage --watch=false
 TEST_PATTERN: **/*.spec.ts
 ```
 
@@ -254,7 +254,7 @@ loading após implementar a issue. Não omitir nem preencher com "N/A".
 ```bash
 ng lint                              # ESLint + angular-eslint
 ng build --configuration=production  # build de produção
-ng test --watch=false                # Vitest
+ng test --coverage --watch=false     # Vitest, com cobertura
 npm run sync:contract                # regenerar tipos a partir do contrato do backend
 ```
 
@@ -262,13 +262,15 @@ CI gates obrigatórios (mesma sequência corre localmente antes de publicar):
 
 1. `ng lint`
 2. `ng build --configuration=production`
-3. `ng test --watch=false`
+3. `ng test --coverage --watch=false`
 
 ---
 
 ## CONVENÇÕES DE TESTES
 
-Vitest via `ng test --watch=false`. Testes ao lado do código (`*.spec.ts`). Prioridade: signal stores
+Vitest via `ng test --coverage --watch=false` — `coverage: true` é opção fixa do target `test` no
+`angular.json` (ver `06-config.md`), por isso qualquer invocação já mede e valida cobertura, mesmo
+sem a flag `--coverage` explícita. Testes ao lado do código (`*.spec.ts`). Prioridade: signal stores
 (input sintético), services (`HttpTestingController`), componentes (`TestBed` mínimo com
 `provideZonelessChangeDetection()`). SSE nunca real nos testes — mockar o `SseStore`.
 

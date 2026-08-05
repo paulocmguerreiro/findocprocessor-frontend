@@ -15,7 +15,7 @@ Produz apenas artefactos locais. Para criar o PR, usar `/publica-implementacao`.
 
 ## Pré-condições
 1. Ler `docs/workflow-state.md` — confirmar `fase: documenta`
-2. Testes a verde (`ng test --watch=false`) e `ng build --configuration=production` a verde — verificar antes de continuar
+2. Testes a verde (`ng test --coverage --watch=false`) e `ng build --configuration=production` a verde — verificar antes de continuar
 
 ## Passos
 

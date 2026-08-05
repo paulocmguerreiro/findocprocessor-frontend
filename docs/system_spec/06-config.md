@@ -24,6 +24,23 @@ Cada `environment` expõe pelo menos `apiUrl` (base da API), consumido pelo toke
 - `ng build --configuration=production` — build de produção (gate de CI).
 - `angular.json` define os targets `build`/`serve`/`test`/`lint`; `styleLanguage: scss`.
 
+## Cobertura (target `test`)
+
+`angular.json`, target `test` (`builder: @angular/build:unit-test`):
+
+```jsonc
+"options": {
+  "coverage": true,
+  "coverageInclude": ["src/app/app.ts", "src/app/state/**/*.ts"],
+  "coverageExclude": ["src/app/contrato/**"],
+  "coverageReporters": ["text"],
+  "coverageThresholds": { "statements": 95, "branches": 95, "functions": 95, "lines": 95 }
+}
+```
+
+devDependency: `@vitest/coverage-v8`. Política de cobertura (âmbito do `coverageInclude`, critério de
+calibração dos limiares): `07-testing.md`.
+
 ## Lint (`eslint.config.js`)
 
 Flat config: `eslint`/`typescript-eslint`/`angular-eslint` para `**/*.ts`, `angular-eslint` (template +
