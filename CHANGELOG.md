@@ -26,7 +26,12 @@ Formato: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   `03-models/` + `04-core/` + `05-routes/` + `06-config` + `07-testing`), `docs/WORKFLOW.md` e
   `docs/process-warnings.md` (aviso PW-001)
 
+### Added
+- Cobertura de testes no target `test` (`@vitest/coverage-v8`) — `coverageInclude` restrito ao código
+  já testado, `coverageExclude` a `src/app/contrato/**`, limiares a 95% (#8)
+
 ### Changed
+- Gate de CI: `ng test --watch=false` → `ng test --coverage --watch=false` (#8)
 - `CLAUDE.md` estendido (nomenclatura, tipagem, MCP `angular` obrigatório, contrato backend-first,
   `SYSTEM_SPEC_MAP`); alinhado com Angular v22 (Standalone/OnPush são defaults — não escrever explicitamente)
 - **Estado/HTTP:** signals são o default (NgRx/RxJS permitidos, com interop `toSignal`/`toObservable`);

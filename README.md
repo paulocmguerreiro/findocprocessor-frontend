@@ -80,7 +80,7 @@ Gates de CI (a mesma sequência corre localmente antes de publicar):
 ```bash
 ng lint                              # ESLint + angular-eslint
 ng build --configuration=production  # build de produção
-ng test --watch=false                # Vitest
+ng test --coverage --watch=false     # Vitest, com cobertura
 ```
 
 ## Relacionado
