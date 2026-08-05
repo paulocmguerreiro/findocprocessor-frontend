@@ -8,7 +8,7 @@ metadata:
 
 # Vitest Testing (Angular v22)
 
-Angular v22 usa **Vitest** como runner de testes por omissão. Correr: `ng test --watch=false`.
+Angular v22 usa **Vitest** como runner de testes por omissão. Correr: `ng test --coverage --watch=false`.
 
 ## Pré-condição obrigatória — MCP `angular`
 
@@ -22,7 +22,7 @@ Não saltar este passo — a API de testes evolui entre versões (zoneless, sign
 ## Estrutura & execução
 
 - Testes ao lado do código: `src/app/**/*.spec.ts`.
-- Correr tudo: `ng test --watch=false`. Filtrar por ficheiro/nome conforme o output do runner.
+- Correr tudo: `ng test --coverage --watch=false`. Filtrar por ficheiro/nome conforme o output do runner.
 - Sintaxe Vitest: `describe()`, `it()`/`test()`, `expect()`. Verificar ficheiros-irmãos para a convenção do projeto antes de escrever.
 - **Não remover testes sem aprovação** — são código core.
 

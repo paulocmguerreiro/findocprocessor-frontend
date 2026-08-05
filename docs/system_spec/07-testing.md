@@ -1,6 +1,6 @@
 # Testes
 
-Runner: **Vitest** (default do Angular desde v21). Comando: `ng test --watch=false`.
+Runner: **Vitest** (default do Angular desde v21). Comando: `ng test --coverage --watch=false`.
 Skill de apoio: `vitest-testing`.
 
 ## Estrutura
