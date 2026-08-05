@@ -25,7 +25,7 @@ Requer `/documenta-implementacao` completo antes de executar.
    ```bash
    ng lint
    ng build --configuration=production
-   ng test --watch=false
+   ng test --coverage --watch=false
    ```
    Corre a mesma sequência que o CI executa no primeiro push. Se qualquer passo falhar →
    **parar, NÃO publicar** e reportar o erro. Detalhe dos gates: `CLAUDE.md` → "FERRAMENTAS DE QUALIDADE".
@@ -41,7 +41,7 @@ Requer `/documenta-implementacao` completo antes de executar.
    [lista das decisões do Debrief]
 
    ## Testes
-   - [ ] Vitest (`ng test --watch=false`) a verde
+   - [ ] Vitest (`ng test --coverage --watch=false`) a verde
    - [ ] Linter (`ng lint`) a verde
    - [ ] Build de produção (`ng build --configuration=production`) a verde
 
