@@ -1,8 +1,8 @@
-# Brief: LoginService — login/logout via SessaoAtivaStore
+# Brief: AutenticacaoService — login/logout via SessaoAtivaStore
 
 **Issue:** #12
 **Data:** 2026-08-06
-**Branch:** feat/login-service
+**Branch:** feat/autenticacao-service
 
 ## Contexto
 
@@ -27,8 +27,8 @@ para o serviço compor os pedidos.
 
 ## O que muda
 
-- **Novo `src/app/core/services/login.service.ts`** — `LoginService` com `login(credenciais)` e
-  `logout()`. Primeiro service HTTP do projeto (`04-core/services.md` diz hoje "nenhum service
+- **Novo `src/app/core/services/autenticacao.service.ts`** — `AutenticacaoService` com `efetuarAutenticacao(credenciais)` e
+  `terminarSessao()`. Primeiro service HTTP do projeto (`04-core/services.md` diz hoje "nenhum service
   implementado ainda"). Injeta `HttpClient` e `API_URL`; escreve no `SessaoAtivaStore` via
   `registarSessao`/`encerrarSessao` e nunca lê `tokenParaAutorizacao`.
 - **Escopo de DI não-root** — `@Injectable()` sem `providedIn: 'root'`, fornecido pelos consumidores
@@ -42,7 +42,7 @@ para o serviço compor os pedidos.
 - **Novo `src/environments/environment.ts`** — expõe pelo menos `apiUrl`.
 - **`angular.json`** (target `test`, `coverageInclude`) — alargar para apanhar `src/app/core/services/**`,
   hoje restrito a `src/app/app.ts` + `src/app/state/**` + `src/app/core/interceptors/**`.
-- **Novo `src/app/core/services/login.service.spec.ts`** — os 4 cenários da CA-09 com
+- **Novo `src/app/core/services/autenticacao.service.spec.ts`** — os 4 cenários da CA-09 com
   `HttpTestingController` e `SessaoAtivaStore` mockado.
 - **Tipo do body de login** derivado do contrato
   (`paths['/auth/login']['post']['requestBody']['content']['application/json']`), importado via o
@@ -52,36 +52,36 @@ para o serviço compor os pedidos.
 ## O que NÃO muda
 
 - **`SessaoAtivaStore`** — já expõe tudo o necessário; nenhuma alteração ao ficheiro nem ao seu spec.
-- **`bearerTokenInterceptor`** — o `logout()` não injeta o header manualmente; o pedido sai já com
+- **`bearerTokenInterceptor`** — o `terminarSessao()` não injeta o header manualmente; o pedido sai já com
   `Authorization` porque o interceptor está registado globalmente em `app.config.ts`.
 - **`eslint.config.js`** — o serviço só escreve no store, por isso não precisa de exceção à regra
   `no-restricted-syntax` de `tokenParaAutorizacao`. A barreira fica intacta e sem novos furos.
-- **`app.config.ts`** — não ganha o `LoginService` nos `providers` (seria contradizer CA-01). Ganha,
+- **`app.config.ts`** — não ganha o `AutenticacaoService` nos `providers` (seria contradizer CA-01). Ganha,
   no máximo, nada: `API_URL` é `providedIn: 'root'` via factory, não precisa de registo explícito.
 - **UI e rotas** — nenhum componente de login, nenhuma rota, nenhum guard, nenhum consumidor de
   `estaAutenticado`. São issues próprias. O serviço nasce sem consumidor de produção (ver Riscos).
 - **`POST /auth/criar`** (registo) e serviço de perfil/permissões (`GET /auth/me`) — fora do contrato
   atual; dependência backend-first futura.
 - **`errorInterceptor`** (409 → toast, `02-shared/envelope-http.md`) — continua pendente; o
-  `LoginService` não duplica tratamento global de erro, apenas garante a coerência do estado de sessão
+  `AutenticacaoService` não duplica tratamento global de erro, apenas garante a coerência do estado de sessão
   antes de repropagar.
 
 ## Riscos identificados
 
 - **O serviço nasce sem provider em toda a aplicação.** Com `@Injectable()` sem `providedIn`, o
-  `LoginService` só existe onde for listado num `providers` — e os dois consumidores previstos
+  `AutenticacaoService` só existe onde for listado num `providers` — e os dois consumidores previstos
   (componente de login, menu de logout) estão fora de âmbito e não existem. Consequência concreta:
-  qualquer `inject(LoginService)` futuro num sítio sem `providers` falha com `NullInjectorError` **em
+  qualquer `inject(AutenticacaoService)` futuro num sítio sem `providers` falha com `NullInjectorError` **em
   runtime**, não em compilação — e nesta issue nem sequer há onde o erro se manifeste, porque só os
   testes o fornecem. O risco não é o desenho (é defensável e está fundamentado na CA-01), é o intervalo
   de tempo em que a decisão fica sem consumidor que a demonstre.
-- **Duas instâncias, por desenho.** Fornecido em dois componentes distintos, o `LoginService` é
+- **Duas instâncias, por desenho.** Fornecido em dois componentes distintos, o `AutenticacaoService` é
   instanciado duas vezes. Hoje é inócuo — é stateless e todo o estado vive no `SessaoAtivaStore`
   singleton. Deixa de ser inócuo no dia em que ganhar qualquer campo próprio (cache, flag de pedido em
   curso): passariam a existir dois estados divergentes sem nenhum erro visível. A ausência de estado
   não é um detalhe do serviço, é a pré-condição da CA-01.
 - **Cobertura silenciosamente não medida.** `coverageInclude` (`angular.json`, target `test`) não
-  inclui `src/app/core/services/**`. Sem alargar, o `login.service.ts` e o seu spec ficam fora do
+  inclui `src/app/core/services/**`. Sem alargar, o `autenticacao.service.ts` e o seu spec ficam fora do
   relatório `@vitest/coverage-v8` e do limiar de 95%: o gate passa a verde sem medir o ficheiro novo.
   É exatamente a armadilha que a Issue #10 já apanhou para `core/interceptors/**` — e que
   `07-testing.md` fixa como regra ("alargar o âmbito é decisão da issue que criar código novo numa
@@ -129,10 +129,10 @@ para o serviço compor os pedidos.
    (`environment.ts`), mas o `06-config.md` documenta os três ficheiros e o gate de produção corre em
    CI. Ou se alarga o âmbito agora, ou se assume conscientemente que o build de produção fica a apontar
    para dev até uma issue de configuração.
-3. **O que faz o `login()` perante um 200 sem `data.token`?** — Repropagar um erro ao chamador e
+3. **O que faz o `efetuarAutenticacao()` perante um 200 sem `data.token`?** — Repropagar um erro ao chamador e
    chamar `encerrarSessao()` (tratar como falha, coerente com a CA-04), ou deixar passar sem registar
    sessão? Precisa de decisão explícita para virar CA de spec e teste.
-4. **Que forma tem a API pública de `login()`/`logout()`?** — `Observable` devolvido ao chamador (o
+4. **Que forma tem a API pública de `efetuarAutenticacao()`/`terminarSessao()`?** — `Observable` devolvido ao chamador (o
    default do projeto: `HttpClient` para leituras e mutações, sem `resource`/`httpResource`), com os
    efeitos de sessão dentro do stream? Confirma-se este contrato de saída, ficando a subscrição e o
    tratamento de erro de UI a cargo do futuro componente de login?

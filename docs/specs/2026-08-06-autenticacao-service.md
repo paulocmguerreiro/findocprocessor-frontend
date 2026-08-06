@@ -1,35 +1,35 @@
-# Spec: LoginService — login/logout via SessaoAtivaStore
+# Spec: AutenticacaoService — login/logout via SessaoAtivaStore
 
 **Issue:** #12
-**Brief:** docs/briefs/2026-08-06-login-service.md
+**Brief:** docs/briefs/2026-08-06-autenticacao-service.md
 **Data:** 2026-08-06
 
 ## Requisitos funcionais
 
-- **RF-01:** `LoginService` em `src/app/core/services/login.service.ts`, decorado com `@Injectable()`
+- **RF-01:** `AutenticacaoService` em `src/app/core/services/autenticacao.service.ts`, decorado com `@Injectable()`
   **sem** `providedIn: 'root'`. Dependências por `inject()`: `HttpClient`, `API_URL`, `SessaoAtivaStore`.
   Sem estado próprio — nenhum campo de instância além das dependências injetadas.
-- **RF-02:** `login(credenciais)` emite `POST {API_URL}/auth/login` com body JSON `{ email, password }`.
+- **RF-02:** `efetuarAutenticacao(credenciais)` emite `POST {API_URL}/auth/login` com body JSON `{ email, password }`.
   O tipo do parâmetro deriva do contrato
   (`paths['/auth/login']['post']['requestBody']['content']['application/json']`), importado do
   ficheiro-índice `src/app/contrato`. Nenhuma interface escrita à mão para a forma do body.
-- **RF-03:** Em 200, `login()` lê `Token['data']['token']`. Se for uma `string` **não vazia**, chama
+- **RF-03:** Em 200, `efetuarAutenticacao()` lê `Token['data']['token']`. Se for uma `string` **não vazia**, chama
   `sessaoAtivaStore.registarSessao(token)` e emite a resposta ao chamador.
-- **RF-04:** Em 200 com token **ausente ou vazio** (`undefined`, `data` ausente, ou `''`), `login()`
+- **RF-04:** Em 200 com token **ausente ou vazio** (`undefined`, `data` ausente, ou `''`), `efetuarAutenticacao()`
   chama `sessaoAtivaStore.encerrarSessao()` e emite um erro ao chamador — a resposta não é tratada
   como sucesso. A string vazia cai neste ramo por decisão explícita: `04-core/sessao-ativa.md` regista
   que o store **não rejeita** `''` e delega esse juízo a quem chama — e quem chama é este serviço.
-- **RF-05:** Em **qualquer** erro HTTP de login, `login()` chama `sessaoAtivaStore.encerrarSessao()` e
+- **RF-05:** Em **qualquer** erro HTTP de login, `efetuarAutenticacao()` chama `sessaoAtivaStore.encerrarSessao()` e
   repropaga o erro original ao chamador, sem o transformar nem o inspecionar. O ramo é único e não
   distingue códigos: 422 `ErrorValidacao`, 429 do `throttle:login` (comportamento real do backend que
   **não** está no `openapi.yaml`), 5xx, e falha de rede/timeout (`HttpErrorResponse` com `status: 0`).
   Em particular, o serviço não lê `error.detail` — num 5xx o Laravel devolve HTML e `error` vem
   `string`, não o envelope `ApiError`.
-- **RF-06:** `logout()` emite `POST {API_URL}/auth/logout` sem body. O header `Authorization` **não**
+- **RF-06:** `terminarSessao()` emite `POST {API_URL}/auth/logout` sem body. O header `Authorization` **não**
   é composto pelo serviço — é o `bearerTokenInterceptor` que o anexa a partir do store.
-- **RF-07:** Em 204, `logout()` chama `sessaoAtivaStore.encerrarSessao()` e completa.
+- **RF-07:** Em 204, `terminarSessao()` chama `sessaoAtivaStore.encerrarSessao()` e completa.
 - **RF-08:** Em **qualquer** erro HTTP de logout (401 `ErrorNaoAutenticado`, 5xx, falha de rede ou
-  timeout), `logout()` chama `sessaoAtivaStore.encerrarSessao()` na mesma e repropaga o erro original.
+  timeout), `terminarSessao()` chama `sessaoAtivaStore.encerrarSessao()` na mesma e repropaga o erro original.
   Ramo único, pelas mesmas razões da RF-05.
 - **RF-09:** `API_URL` (`InjectionToken<string>`) criado em `src/app/core/api-url.token.ts` com
   `providedIn: 'root'` e `factory: () => environment.apiUrl`, conforme `04-core/tokens.md`.
@@ -83,16 +83,16 @@ Nenhum model novo. A forma do `environment`:
 ## Regras de negócio
 
 - **RN-01:** Sessão registada **se e só se** o backend devolveu um token utilizável. Qualquer outro
-  desfecho de `login()` — erro HTTP ou 200 sem token — deixa a aplicação sem sessão.
+  desfecho de `efetuarAutenticacao()` — erro HTTP ou 200 sem token — deixa a aplicação sem sessão.
 - **RN-02:** Uma tentativa de login falhada encerra também a sessão anterior, se existia. É intencional
   (CA-04): mais vale perder uma sessão válida do que manter estado que já não corresponde ao que o
   backend sabe.
 - **RN-03:** O encerramento local do logout não depende da confirmação do backend. Se o token já era
   inválido no servidor, o pior cenário é encerrar uma sessão que já não existia.
-- **RN-04:** O encerramento de sessão do `logout()` ocorre sempre no **resultado** do pedido (sucesso
+- **RN-04:** O encerramento de sessão do `terminarSessao()` ocorre sempre no **resultado** do pedido (sucesso
   ou erro), nunca antes de este ser emitido — caso contrário o pedido sairia sem `Authorization`,
   porque o interceptor lê o store no momento da emissão.
-- **RN-05:** O `LoginService` é a **única** fronteira que desembrulha `Token['data']['token']`
+- **RN-05:** O `AutenticacaoService` é a **única** fronteira que desembrulha `Token['data']['token']`
   (`04-core/sessao-ativa.md`). O store continua a receber sempre uma `string` já resolvida — e **não
   vazia**: rejeitar `''` é responsabilidade de quem chama, por decisão registada no store.
 - **RN-06:** Um pedido cancelado não é um desfecho: se o chamador desistir antes da resposta, o estado
@@ -111,27 +111,37 @@ Nenhum model novo. A forma do `environment`:
 | ------------------ | ------- |
 | Que `apiUrl` fica em `environment.ts`? | Host de Valet: `http://findocprocessor-backend-laravel.test/api` — o mesmo host que `npm run sync:contract` já usa |
 | `environment.production.ts` + `fileReplacements` entram nesta issue? | **Sim** — âmbito alargado por decisão no Checkpoint A. Produção serve da mesma origem, logo `apiUrl: '/api'` (relativo, sem host). O `/api` mantém-se porque é o prefixo real das rotas do backend, não uma escolha de ambiente |
-| O que faz `login()` perante um 200 sem `data.token`? | Trata como falha: `encerrarSessao()` + erro propagado ao chamador. Uma sessão válida implica token devolvido; sem token, um pedido subsequente seria barrado pelo Sanctum de qualquer forma — melhor falhar aqui, de forma visível, do que ficar num estado "autenticado" inútil |
-| Que forma tem a API pública de `login()`/`logout()`? | `Observable` devolvido ao chamador (default do projeto: `HttpClient` para leituras e mutações), com os efeitos de sessão dentro do stream. Subscrição e tratamento de erro de UI ficam para o futuro componente de login |
+| O que faz `efetuarAutenticacao()` perante um 200 sem `data.token`? | Trata como falha: `encerrarSessao()` + erro propagado ao chamador. Uma sessão válida implica token devolvido; sem token, um pedido subsequente seria barrado pelo Sanctum de qualquer forma — melhor falhar aqui, de forma visível, do que ficar num estado "autenticado" inútil |
+| Que forma tem a API pública de `efetuarAutenticacao()`/`terminarSessao()`? | `Observable` devolvido ao chamador (default do projeto: `HttpClient` para leituras e mutações), com os efeitos de sessão dentro do stream. Subscrição e tratamento de erro de UI ficam para o futuro componente de login |
 | Alargar `coverageInclude`? | **Sim** — `src/app/core/services/**/*.ts` entra no âmbito de cobertura nesta issue |
 | Que edge cases reais cobrir a este nível? _(levantada no Checkpoint B)_ | Os que uma implementação plausível erraria em silêncio e que o mock consegue provar: token vazio (CA-15), cancelamento a meio (CA-16), rede/timeout e 429 fora do contrato (CA-17), 5xx com corpo HTML (CA-18). **Fora deste nível** — valor do `apiUrl`, CORS, Sanctum real, SSE, `fileReplacements` — registado em `WRN-002` para uma camada e2e em issue própria. Testar "URL incorreto" aqui é teatro: o `expectOne()` prova a *composição* do URL, nunca o valor do `apiUrl` |
 
 ## Critérios de aceitação
 
 > Herdados da issue — nunca remover ou reformular os CAs originais sem justificação.
+>
+> **Desvio registado (2026-08-06, Checkpoint B):** os CAs da issue nomeiam `LoginService`,
+> `src/app/core/services/login.service.ts`, `login()` e `logout()`. Por decisão do utilizador, os
+> símbolos passam a Português — `AutenticacaoService`, `src/app/core/services/autenticacao.service.ts`,
+> `efetuarAutenticacao()`, `terminarSessao()` — por consistência com o `SessaoAtivaStore`
+> (`registarSessao`/`encerrarSessao`/`estaAutenticado`) e com `02-shared/convencoes-nomenclatura.md`
+> ("símbolos de domínio em PT"). **Os paths do contrato não mudam** (`/auth/login`, `/auth/logout`):
+> pertencem ao backend. O texto abaixo é o dos CAs originais com os nomes substituídos — nenhum
+> critério foi removido, adicionado ou enfraquecido. A issue #12 no GitHub continua a dizer
+> `LoginService`; sincronizar o corpo da issue é ação à parte.
 
-- [ ] CA-01: `LoginService` (`src/app/core/services/login.service.ts`) usa `@Injectable()` **sem**
+- [ ] CA-01: `AutenticacaoService` (`src/app/core/services/autenticacao.service.ts`) usa `@Injectable()` **sem**
       `providedIn: 'root'` — é stateless e fornecido via `providers` dos componentes/rotas que o usam,
       não como singleton global. `inject(HttpClient)`, `inject(API_URL)`. _(issue)_
-- [ ] CA-02: `login(credenciais)` faz `POST /auth/login` com body `{ email, password }`, com o tipo do
+- [ ] CA-02: `efetuarAutenticacao(credenciais)` faz `POST /auth/login` com body `{ email, password }`, com o tipo do
       body extraído do contrato — sem duplicar a forma à mão. _(issue)_
 - [ ] CA-03: Em 200, desembrulha `Token['data']['token']`, confirma que existe e chama
-      `registarSessao(token)`. Só o `LoginService` faz este desembrulhar. _(issue)_
+      `registarSessao(token)`. Só o `AutenticacaoService` faz este desembrulhar. _(issue)_
 - [ ] CA-04: Em erro de login (422 ou falha de rede), chama `encerrarSessao()` antes de repropagar o
       erro. _(issue)_
-- [ ] CA-05: `logout()` faz `POST /auth/logout`; em 204 chama `encerrarSessao()`. _(issue)_
+- [ ] CA-05: `terminarSessao()` faz `POST /auth/logout`; em 204 chama `encerrarSessao()`. _(issue)_
 - [ ] CA-06: Em erro de logout (401 ou falha de rede), chama `encerrarSessao()` na mesma. _(issue)_
-- [ ] CA-07: `LoginService` nunca lê `tokenParaAutorizacao` — `ng lint` passa sem nova exceção em
+- [ ] CA-07: `AutenticacaoService` nunca lê `tokenParaAutorizacao` — `ng lint` passa sem nova exceção em
       `eslint.config.js`. _(issue)_
 - [ ] CA-08: `API_URL` (`InjectionToken<string>`) e `src/environments/environment.ts` criados. _(issue)_
 - [ ] CA-09: Testes (Vitest + `HttpTestingController`) para os 4 cenários — login sucesso, login erro,
@@ -140,10 +150,10 @@ Nenhum model novo. A forma do `environment`:
       na configuração `production` do target `build` do `angular.json` — o bundle de produção não pode
       levar a `apiUrl` de dev. _(spec)_
 - [ ] CA-11: `coverageInclude` do target `test` inclui `src/app/core/services/**/*.ts`; o relatório de
-      `ng test --coverage --watch=false` mostra `login.service.ts` e o limiar de 95% mantém-se. _(spec)_
+      `ng test --coverage --watch=false` mostra `autenticacao.service.ts` e o limiar de 95% mantém-se. _(spec)_
 - [ ] CA-12: Teste que fixa o 200 sem `data.token`: `encerrarSessao()` chamado, `registarSessao` **não**
       chamado, erro entregue ao chamador. _(spec)_
-- [ ] CA-13: Teste que fixa a ordem no `logout()`: o pedido é emitido (e a asserção de `expectOne`
+- [ ] CA-13: Teste que fixa a ordem no `terminarSessao()`: o pedido é emitido (e a asserção de `expectOne`
       passa) **antes** de `encerrarSessao()` ser chamado — o encerramento acontece no resultado, nunca
       antes da emissão. _(spec)_
 - [ ] CA-14: Teste que fixa a RN-02: com sessão já registada, um login falhado deixa o store encerrado
@@ -152,10 +162,10 @@ Nenhum model novo. A forma do `environment`:
       ausente — `encerrarSessao()` chamado, `registarSessao` **não** chamado, erro ao chamador. Sem
       este ramo, `estaAutenticado()` ficaria `true` com credencial inútil, porque o store aceita `''`
       de propósito. _(spec)_
-- [ ] CA-16: Teste que fixa a RN-06/RF-13 — cancelamento a meio: desinscrever de `login()` antes de
+- [ ] CA-16: Teste que fixa a RN-06/RF-13 — cancelamento a meio: desinscrever de `efetuarAutenticacao()` antes de
       `flush()` não chama `registarSessao` **nem** `encerrarSessao`. É o único teste que distingue
       `tap` de `finalize`; sem ele, trocar um pelo outro passa despercebido. _(spec)_
-- [ ] CA-17: Testes do ramo de erro não previsto no contrato, em `login()` e em `logout()`: falha de
+- [ ] CA-17: Testes do ramo de erro não previsto no contrato, em `efetuarAutenticacao()` e em `terminarSessao()`: falha de
       rede/timeout (`HttpErrorResponse` com `status: 0`) e 429 do `throttle:login` — ambos chamam
       `encerrarSessao()` e repropagam, tal como o 422/401. Um teste por ramo, não um por código de
       status. _(spec)_
@@ -168,7 +178,7 @@ Nenhum model novo. A forma do `environment`:
 > Fase 3a (`/documenta-implementacao`) — nunca na Fase 2.
 
 - `docs/system_spec/04-core/services.md` — deixa de dizer "nenhum service implementado"; documenta o
-  `LoginService` e o desvio consciente ao padrão-tipo (`@Injectable()` não-root vs `@Service()`/root).
+  `AutenticacaoService` e o desvio consciente ao padrão-tipo (`@Injectable()` não-root vs `@Service()`/root).
 - `docs/system_spec/04-core/tokens.md` — `API_URL` passa de "pendente" a implementado, com o caminho
   do ficheiro.
 - `docs/system_spec/06-config.md` — `environment.ts` e `environment.production.ts` passam a existir;
@@ -185,7 +195,7 @@ Nenhum ficheiro novo em `docs/system_spec/` → `00-index.md` não precisa de li
 - **Dados pessoais:** sim — `email` e `password` no body do login, só em trânsito. Nunca persistidos,
   nunca logados (RNF-02). O token de resposta vive apenas em memória no `SessaoAtivaStore` (RNF-03).
 - **Superfície de ataque:** alterada — primeiro serviço do frontend que emite e revoga credenciais
-  Bearer. Mitigações: token nunca sai da memória; nenhum desfecho de `login()` deixa sessão parcial
+  Bearer. Mitigações: token nunca sai da memória; nenhum desfecho de `efetuarAutenticacao()` deixa sessão parcial
   (RN-01); logout encerra localmente mesmo sem confirmação do backend (RN-03); a barreira ESLint de
   leitura do token mantém-se sem novas exceções (RNF-04). A `apiUrl` relativa em produção elimina a
   hipótese de o bundle de produção falar com o host de desenvolvimento.

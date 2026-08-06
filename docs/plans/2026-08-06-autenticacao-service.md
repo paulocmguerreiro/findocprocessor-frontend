@@ -1,7 +1,7 @@
-# Plano: LoginService — login/logout via SessaoAtivaStore
+# Plano: AutenticacaoService — login/logout via SessaoAtivaStore
 
 **Issue:** #12
-**Spec:** docs/specs/2026-08-06-login-service.md
+**Spec:** docs/specs/2026-08-06-autenticacao-service.md
 **Data:** 2026-08-06
 
 ## Tarefas
@@ -36,7 +36,7 @@
 - **O que implementar:** acrescentar `src/app/core/services/**/*.ts` à lista, ao lado de
   `src/app/app.ts`, `src/app/state/**/*.ts` e `src/app/core/interceptors/**/*.ts`. Limiares mantêm-se
   a 95%.
-- **Porquê antes da Tarefa 3:** feito depois, o `login.service.ts` nasceria fora do relatório e o gate
+- **Porquê antes da Tarefa 3:** feito depois, o `autenticacao.service.ts` nasceria fora do relatório e o gate
   passaria a verde sem o medir — a armadilha que a #10 já apanhou para `core/interceptors/**`. Feito
   antes, a primeira execução de testes da Tarefa 3 já mede o ficheiro novo.
 - **Testes associados:** nenhum próprio; a verificação é `ng test --coverage --watch=false` continuar
@@ -44,49 +44,49 @@
 - **Cobre:** CA-11, RF-12
 - **Commit:** `chore(testing): incluir core/services no âmbito de cobertura (#12)`
 
-### Tarefa 3 — `LoginService` + testes
+### Tarefa 3 — `AutenticacaoService` + testes
 
 - **Ficheiros a criar/alterar:**
-  - `src/app/core/services/login.service.ts` (novo)
-  - `src/app/core/services/login.service.spec.ts` (novo)
+  - `src/app/core/services/autenticacao.service.ts` (novo)
+  - `src/app/core/services/autenticacao.service.spec.ts` (novo)
 - **O que implementar:**
   - `@Injectable()` **sem** `providedIn: 'root'`. Sem campos de instância além das dependências
     injetadas por `inject()`: `HttpClient`, `API_URL`, `SessaoAtivaStore`.
   - Tipo do body derivado do contrato:
-    `type CredenciaisLogin = paths['/auth/login']['post']['requestBody']['content']['application/json']`,
+    `type CredenciaisAutenticacao = paths['/auth/login']['post']['requestBody']['content']['application/json']`,
     com `paths` importado de `../../contrato` (o ficheiro-índice já o reexporta) — nunca de
     `api.generated.ts`. Nenhuma interface escrita à mão para a forma do body.
-  - `login(credenciais: CredenciaisLogin): Observable<Token>` — `POST {apiUrl}/auth/login`. No caminho
+  - `efetuarAutenticacao(credenciais: CredenciaisAutenticacao): Observable<Token>` — `POST {apiUrl}/auth/login`. No caminho
     de sucesso, desembrulhar `resposta.data?.token` por guarda explícita (sem `as string`, sem `!`):
     `string` não vazia → `registarSessao(token)`; ausente ou `''` → `encerrarSessao()` e emitir erro.
     No caminho de erro, `encerrarSessao()` e repropagar o erro **original**, sem o inspecionar.
-  - `logout(): Observable<void>` — `POST {apiUrl}/auth/logout` sem body. `encerrarSessao()` no
+  - `terminarSessao(): Observable<void>` — `POST {apiUrl}/auth/logout` sem body. `encerrarSessao()` no
     resultado, tanto em 204 como em erro. **Nunca antes de o pedido ser emitido**: o header
     `Authorization` é anexado pelo `bearerTokenInterceptor`, que lê o store no momento da emissão.
   - Efeitos dentro do stream (`tap`/`catchError`), **nunca `finalize`** — `finalize` correria também no
     unsubscribe e violaria a RN-06.
   - Nenhuma leitura de `tokenParaAutorizacao` — nem no serviço nem no spec (mantém a barreira ESLint
     sem exceções novas).
-- **Testes associados** (`login.service.spec.ts`, `provideHttpClientTesting()` +
+- **Testes associados** (`autenticacao.service.spec.ts`, `provideHttpClientTesting()` +
   `HttpTestingController`, `SessaoAtivaStore` substituído por duplo com `vi.fn()`):
-  - login sucesso → `registarSessao` com o token; URL e body do pedido conferidos em `expectOne`
-  - login 422 `ErrorValidacao` → `encerrarSessao`, erro chega ao chamador
-  - login 200 sem `data.token` → `encerrarSessao`, `registarSessao` não chamado, erro ao chamador
-  - login 200 com `data.token === ''` → mesmo ramo do anterior
-  - login com sessão já registada + falha → fica encerrado, não mantém a sessão anterior
-  - login cancelado antes do `flush()` → nem `registarSessao` nem `encerrarSessao`
-  - login/logout com `status: 0` (falha de rede) e com 429 → `encerrarSessao` + repropagação
-  - login 500 com corpo HTML → `encerrarSessao`, erro intacto, sem tocar em `error.detail`
-  - logout sucesso (204) → `encerrarSessao`; a asserção de `expectOne` passa **antes** do encerramento
-  - logout 401 → `encerrarSessao` na mesma
+  - autenticação com sucesso → `registarSessao` com o token; URL e body do pedido conferidos em `expectOne`
+  - autenticação 422 `ErrorValidacao` → `encerrarSessao`, erro chega ao chamador
+  - autenticação 200 sem `data.token` → `encerrarSessao`, `registarSessao` não chamado, erro ao chamador
+  - autenticação 200 com `data.token === ''` → mesmo ramo do anterior
+  - autenticação com sessão já registada + falha → fica encerrado, não mantém a sessão anterior
+  - autenticação cancelada antes do `flush()` → nem `registarSessao` nem `encerrarSessao`
+  - autenticação/terminar sessão com `status: 0` (falha de rede) e com 429 → `encerrarSessao` + repropagação
+  - autenticação 500 com corpo HTML → `encerrarSessao`, erro intacto, sem tocar em `error.detail`
+  - terminar sessão com sucesso (204) → `encerrarSessao`; a asserção de `expectOne` passa **antes** do encerramento
+  - terminar sessão 401 → `encerrarSessao` na mesma
   - `httpTesting.verify()` no `afterEach`
   - Nenhum `console.*` com `email`, `password` ou token (RNF-02)
 - **Cobre:** CA-01 a CA-07, CA-09, CA-12 a CA-18, RF-01 a RF-08, RF-13
-- **Commit:** `feat(core): LoginService com login/logout via SessaoAtivaStore (#12)`
+- **Commit:** `feat(core): AutenticacaoService com login/logout via SessaoAtivaStore (#12)`
 
 ## Ordem de implementação
 
-1. **Tarefa 1** — porque o `LoginService` injeta `API_URL`, que não existe sem o `environment`. Sem
+1. **Tarefa 1** — porque o `AutenticacaoService` injeta `API_URL`, que não existe sem o `environment`. Sem
    ela, a Tarefa 3 nem compila.
 2. **Tarefa 2** — porque tem de estar feita **antes** de existir código em `core/services/`, senão a
    primeira medição de cobertura do serviço novo nunca acontece e o gate dá falso verde.
@@ -99,16 +99,16 @@ Respeita a ordem de camadas do `CLAUDE.md`: `contrato (já gerado) → core (tok
 
 | Teste | Tipo | Ficheiro | Verifica |
 | ----- | ---- | -------- | -------- |
-| `deve_registar_sessao_quando_login_devolve_token` | unit | `login.service.spec.ts` | CA-02, CA-03 — URL, body e `registarSessao(token)` |
-| `deve_encerrar_sessao_quando_login_falha_com_validacao` | unit | `login.service.spec.ts` | CA-04 — 422 `ErrorValidacao` |
-| `deve_encerrar_sessao_quando_login_devolve_200_sem_token` | unit | `login.service.spec.ts` | CA-12 — sem `data.token` |
-| `deve_encerrar_sessao_quando_login_devolve_token_vazio` | unit | `login.service.spec.ts` | CA-15 — `data.token === ''` |
-| `deve_encerrar_sessao_anterior_quando_novo_login_falha` | unit | `login.service.spec.ts` | CA-14 / RN-02 |
-| `nao_deve_tocar_na_sessao_quando_login_e_cancelado` | unit | `login.service.spec.ts` | CA-16 / RN-06 — fixa `tap` vs `finalize` |
-| `deve_encerrar_sessao_quando_login_falha_por_rede_ou_excesso_de_tentativas` | unit | `login.service.spec.ts` | CA-17 — `status: 0` e 429 |
-| `deve_repropagar_erro_intacto_quando_resposta_nao_e_json` | unit | `login.service.spec.ts` | CA-18 / RN-07 — 5xx com HTML |
-| `deve_encerrar_sessao_quando_logout_devolve_204` | unit | `login.service.spec.ts` | CA-05 + CA-13 — pedido emitido antes do encerramento |
-| `deve_encerrar_sessao_quando_logout_falha_com_nao_autenticado` | unit | `login.service.spec.ts` | CA-06 — 401 |
+| `deve_registar_sessao_quando_autenticacao_devolve_token` | unit | `autenticacao.service.spec.ts` | CA-02, CA-03 — URL, body e `registarSessao(token)` |
+| `deve_encerrar_sessao_quando_autenticacao_falha_com_validacao` | unit | `autenticacao.service.spec.ts` | CA-04 — 422 `ErrorValidacao` |
+| `deve_encerrar_sessao_quando_autenticacao_devolve_200_sem_token` | unit | `autenticacao.service.spec.ts` | CA-12 — sem `data.token` |
+| `deve_encerrar_sessao_quando_autenticacao_devolve_token_vazio` | unit | `autenticacao.service.spec.ts` | CA-15 — `data.token === ''` |
+| `deve_encerrar_sessao_anterior_quando_nova_autenticacao_falha` | unit | `autenticacao.service.spec.ts` | CA-14 / RN-02 |
+| `nao_deve_tocar_na_sessao_quando_autenticacao_e_cancelada` | unit | `autenticacao.service.spec.ts` | CA-16 / RN-06 — fixa `tap` vs `finalize` |
+| `deve_encerrar_sessao_quando_autenticacao_falha_por_rede_ou_excesso_de_tentativas` | unit | `autenticacao.service.spec.ts` | CA-17 — `status: 0` e 429 |
+| `deve_repropagar_erro_intacto_quando_resposta_nao_e_json` | unit | `autenticacao.service.spec.ts` | CA-18 / RN-07 — 5xx com HTML |
+| `deve_encerrar_sessao_quando_terminar_sessao_devolve_204` | unit | `autenticacao.service.spec.ts` | CA-05 + CA-13 — pedido emitido antes do encerramento |
+| `deve_encerrar_sessao_quando_terminar_sessao_falha_com_nao_autenticado` | unit | `autenticacao.service.spec.ts` | CA-06 — 401 |
 
 ## Dependências
 
@@ -122,7 +122,7 @@ Respeita a ordem de camadas do `CLAUDE.md`: `contrato (já gerado) → core (tok
 
 - **O serviço nasce sem provider em produção.** `@Injectable()` sem `providedIn` significa que só
   existe onde for listado num `providers` — e os consumidores (componente de login, menu de logout)
-  estão fora de âmbito. Um `inject(LoginService)` futuro sem `providers` falha com `NullInjectorError`
+  estão fora de âmbito. Um `inject(AutenticacaoService)` futuro sem `providers` falha com `NullInjectorError`
   **em runtime**, não em compilação. Nesta issue só os testes o fornecem.
 - **Duas instâncias, por desenho.** Fornecido em dois componentes, é instanciado duas vezes. Inócuo
   enquanto for stateless — deixa de o ser no dia em que ganhar um campo próprio. A ausência de estado
@@ -134,7 +134,7 @@ Respeita a ordem de camadas do `CLAUDE.md`: `contrato (já gerado) → core (tok
   só o teste de cancelamento (CA-16) os distingue. Sem esse teste, a troca é invisível.
 - **`HttpClient` devolve Observables frios.** Os testes têm de subscrever antes de `expectOne()`, ou o
   pedido nunca é emitido e a asserção falha por razão errada.
-- **Falha de login derruba a sessão anterior** (RN-02). É intencional e fica fixado por teste (CA-14),
+- **Falha de autenticação derruba a sessão anterior** (RN-02). É intencional e fica fixado por teste (CA-14),
   para não ser "corrigido" mais tarde por parecer um bug — mesmo tratamento que o
   `SessaoAtivaStore` deu ao caso `registarSessao('')`.
 - **Cobertura silenciosamente não medida** se a Tarefa 2 escorregar para depois da Tarefa 3.
@@ -145,11 +145,11 @@ Respeita a ordem de camadas do `CLAUDE.md`: `contrato (já gerado) → core (tok
 
 ## O que NÃO fazer nesta issue
 
-- **Não** registar o `LoginService` nos `providers` de `app.config.ts` — contradiz a CA-01.
+- **Não** registar o `AutenticacaoService` nos `providers` de `app.config.ts` — contradiz a CA-01.
 - **Não** acrescentar exceções a `eslint.config.js`: se o lint acusar `tokenParaAutorizacao`, o erro
   está no serviço, não na regra (CA-07).
-- **Não** compor o header `Authorization` à mão no `logout()` — é do `bearerTokenInterceptor` (#10).
-- **Não** afirmar o header `Authorization` no `login.service.spec.ts` — é do spec da #10. Aqui prova-se,
+- **Não** compor o header `Authorization` à mão no `terminarSessao()` — é do `bearerTokenInterceptor` (#10).
+- **Não** afirmar o header `Authorization` no `autenticacao.service.spec.ts` — é do spec da #10. Aqui prova-se,
   no máximo, que o serviço **não** o põe.
 - **Não** criar componente de login, rota, guard ou qualquer consumidor de `estaAutenticado`.
 - **Não** implementar `POST /auth/criar` nem serviço de perfil/permissões — fora do contrato atual.
