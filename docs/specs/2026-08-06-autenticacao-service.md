@@ -13,6 +13,9 @@
   O tipo do parâmetro deriva do contrato
   (`paths['/auth/login']['post']['requestBody']['content']['application/json']`), importado do
   ficheiro-índice `src/app/contrato`. Nenhuma interface escrita à mão para a forma do body.
+  O alias local `CredenciaisAutenticacao` é deliberadamente a única referência a essa expressão: quando
+  o backend nomear o schema de pedido em `components.schemas` (ver `WRN-003`), a migração é substituir
+  uma linha por um import, sem tocar no serviço nem nos testes.
 - **RF-03:** Em 200, `efetuarAutenticacao()` lê `Token['data']['token']`. Se for uma `string` **não vazia**, chama
   `sessaoAtivaStore.registarSessao(token)` e emite a resposta ao chamador.
 - **RF-04:** Em 200 com token **ausente ou vazio** (`undefined`, `data` ausente, ou `''`), `efetuarAutenticacao()`
