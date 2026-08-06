@@ -6,7 +6,7 @@
 
 - `provideZonelessChangeDetection()` — app zoneless.
 - `provideRouter(routes)` — rotas lazy (`05-routes/rotas.md`).
-- `provideHttpClient(withInterceptors([errorInterceptor]))` — HTTP + interceptors (`04-core/interceptors.md`).
+- `provideHttpClient(withInterceptors([bearerTokenInterceptor]))` — HTTP + interceptors (`04-core/interceptors.md`).
 - `API_URL` — token com factory a partir de `environment` (`04-core/tokens.md`).
 
 ## Ambientes (`src/environments/`)
@@ -31,7 +31,7 @@ Cada `environment` expõe pelo menos `apiUrl` (base da API), consumido pelo toke
 ```jsonc
 "options": {
   "coverage": true,
-  "coverageInclude": ["src/app/app.ts", "src/app/state/**/*.ts"],
+  "coverageInclude": ["src/app/app.ts", "src/app/state/**/*.ts", "src/app/core/interceptors/**/*.ts"],
   "coverageExclude": ["src/app/contrato/**"],
   "coverageReporters": ["text"],
   "coverageThresholds": { "statements": 95, "branches": 95, "functions": 95, "lines": 95 }

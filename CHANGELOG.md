@@ -29,6 +29,10 @@ Formato: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ### Added
 - Cobertura de testes no target `test` (`@vitest/coverage-v8`) — `coverageInclude` restrito ao código
   já testado, `coverageExclude` a `src/app/contrato/**`, limiares a 95% (#8)
+- **`bearerTokenInterceptor`** (`src/app/core/interceptors/`) — interceptor funcional que injeta
+  `Authorization: Bearer <token>` a partir do `SessaoAtivaStore` em todo pedido HTTP quando há sessão
+  ativa com token não vazio; registado em `app.config.ts` via `provideHttpClient(withInterceptors([...]))`;
+  `coverageInclude` alargado a `src/app/core/interceptors/**/*.ts` (#10)
 
 ### Changed
 - Gate de CI: `ng test --watch=false` → `ng test --coverage --watch=false` (#8)

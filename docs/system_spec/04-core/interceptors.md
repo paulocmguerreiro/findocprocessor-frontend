@@ -3,13 +3,43 @@
 Interceptors funcionais em `src/app/core/interceptors/`, registados via
 `provideHttpClient(withInterceptors([...]))` em `app.config.ts`.
 
-## Interceptors planeados
+## Interceptors
 
-| Interceptor        | Responsabilidade                                    | Estado   |
-| ------------------ | --------------------------------------------------- | -------- |
-| `errorInterceptor` | 409 → toast; mapeia erros para `ApiError`; 5xx/rede | pendente |
+| Interceptor               | Responsabilidade                                                     | Estado       |
+| -------------------------- | --------------------------------------------------------------------- | ------------ |
+| `bearerTokenInterceptor` | Injeta `Authorization: Bearer <token>` a partir do `SessaoAtivaStore` | implementado |
+| `errorInterceptor`        | 409 → toast; mapeia erros para `ApiError`; 5xx/rede                   | pendente     |
 
-## Padrão (funcional)
+Registo em `app.config.ts`: `provideHttpClient(withInterceptors([bearerTokenInterceptor]))`.
+
+## Padrão (funcional, com estado)
+
+Leitura de um signal store dentro de um interceptor funcional — só funciona porque
+`provideHttpClient(withInterceptors([...]))` estabelece um contexto de injeção por pedido; testar
+exige montar o mesmo provider chain no `TestBed` (`provideHttpClient(withInterceptors([...]))` +
+`provideHttpClientTesting()`), nunca invocar a função interceptor a frio:
+
+```ts
+import { HttpInterceptorFn } from '@angular/common/http';
+import { inject } from '@angular/core';
+import { SessaoAtivaStore } from '../../state/sessao-ativa.store';
+
+export const bearerTokenInterceptor: HttpInterceptorFn = (req, next) => {
+  const sessaoAtiva = inject(SessaoAtivaStore);
+  const token = sessaoAtiva.tokenParaAutorizacao();
+
+  if (sessaoAtiva.estaAutenticado() && token) {
+    return next(req.clone({ setHeaders: { Authorization: `Bearer ${token}` } }));
+  }
+
+  return next(req);
+};
+```
+
+Leitura de `tokenParaAutorizacao` restrita pelo ESLint a `src/app/core/interceptors/**` — ver
+`06-config.md` e `04-core/sessao-ativa.md`.
+
+## Padrão (funcional, com erro)
 
 ```ts
 import { HttpInterceptorFn } from '@angular/common/http';
