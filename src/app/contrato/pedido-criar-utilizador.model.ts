@@ -4,4 +4,4 @@
 // Alterações manuais PERDEM-SE na próxima sincronização: npm run sync:contract
 import type { components } from './api.generated';
 
-export type Utilizador = components['schemas']['Utilizador'];
+export type PedidoCriarUtilizador = components['schemas']['PedidoCriarUtilizador'];

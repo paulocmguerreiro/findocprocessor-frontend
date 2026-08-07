@@ -40,13 +40,29 @@ O `openapi.yaml` é obtido **sempre por URL**, nunca por caminho de ficheiro no 
 ## Recursos atualmente no contrato
 
 Schemas: `Documento` (+ `EtapaDocumento`, historico), `CategoriaDocumento`, `TipoDocumento`, `Entidade`,
-`Role`, `Utilizador`, `Token`. Enums: `EstadoDocumento`, `ResultadoEtapa`, `FiltroEstadoRegisto`.
-Envelope de erro: `ErrorValidacao`, `ErrorNaoAutenticado`, `ErrorNaoEncontrado`, `ErrorSemPermissao`,
-`ErrorTransicaoInvalida`. Rotas: auth, categorias-documento, tipos-documento, entidades, roles,
-documentos (+ upload, reprocessar, ficheiro), utilizadores.
+`Role`, `Utilizador`, `Token`. Pedidos (request DTOs): `PedidoAutenticacao`, `PedidoCriarToken`,
+`PedidoCriarCategoria`/`PedidoAtualizarCategoria`, `PedidoCriarTipoDocumento`/`PedidoAtualizarTipoDocumento`,
+`PedidoCriarEntidade`/`PedidoAtualizarEntidade`, `PedidoCriarRole`/`PedidoAtualizarRole`,
+`PedidoCriarUtilizador`/`PedidoAtualizarUtilizador`/`PedidoAtribuirRole`,
+`PedidoCriarDocumentoManual`/`PedidoUploadDocumento`/`PedidoCorrigirDocumento`/`PedidoReprocessarDocumento`.
+Enums: `EstadoDocumento`, `ResultadoEtapa`, `FiltroEstadoRegisto`, `ModoReprocessamento`, `Permissao`,
+`PosicaoEmpresaMae`, `TipoMovimento`, `DirecaoOrdenacao` + `CampoOrdenacao{Categorias,Documentos,Entidades,Roles,TiposDocumento,Utilizadores}`
+(ordenação por listagem, um enum por recurso). Envelope de erro: `ErrorValidacao`, `ErrorNaoAutenticado`,
+`ErrorNaoEncontrado`, `ErrorSemPermissao`, `ErrorTransicaoInvalida`, `ErrorAgrupamentoInvalido`,
+`ErrorDemasiadosPedidos`, `ErrorDocumentoDuplicado`. Rotas: auth (login/logout/criarToken),
+categorias-documento, tipos-documento, entidades (+ agruparCom/converterEmEmpresaMae/restaurar), roles,
+documentos (+ upload, reprocessar, descarregar), utilizadores (+ anonimizar, restaurar, atribuirRole).
 
 > Valores e campos exatos: `src/app/contrato/api.generated.ts` (fonte). Não duplicar aqui — este ficheiro
 > regista **o que existe para consumir** e a data do último sync, não o corpo dos tipos.
+
+**Último sync:** 2026-08-07 (via `sync:contract:github` — Valet local indisponível). Drift desta
+sincronização: `operations` passou a ter chaves nomeadas por `operationId` (ex.: `operations["auth.login"]`,
+antes anónimas por path); parâmetros de rota `{id}` renomeados para o nome do recurso (ex.:
+`{categorias_documento}`, `{entidade}`, `{role}`, `{tipos_documento}`, `{utilizador}`) — sem impacto no
+código consumidor (`tsc --noEmit` limpo). Adições: 16 novos `Pedido*` (request DTOs, antes ausentes do
+contrato), 8 novos enums de ordenação/domínio, 3 novos envelopes de erro (`ErrorAgrupamentoInvalido`,
+`ErrorDemasiadosPedidos`, `ErrorDocumentoDuplicado`).
 
 ## Regras
 - Importar sempre do ficheiro-índice `src/app/contrato` (`index.ts`), nunca do gerado diretamente.

@@ -13,44 +13,8 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Autenticar utilizador e emitir token Bearer */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        /** Format: email */
-                        email: string;
-                        password: string;
-                    };
-                };
-            };
-            responses: {
-                /** @description Token emitido com sucesso */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Token"];
-                    };
-                };
-                /** @description Credenciais inválidas ou campos em falta */
-                422: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorValidacao"];
-                    };
-                };
-            };
-        };
+        /** Autentica um utilizador e emite um token de acesso */
+        post: operations["auth.login"];
         delete?: never;
         options?: never;
         head?: never;
@@ -66,34 +30,8 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Revogar token actual */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Token revogado */
-                204: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Não autenticado */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorNaoAutenticado"];
-                    };
-                };
-            };
-        };
+        /** Revoga o token de acesso em uso */
+        post: operations["auth.logout"];
         delete?: never;
         options?: never;
         head?: never;
@@ -109,51 +47,8 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Criar token adicional para o utilizador autenticado */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        nome_token: string;
-                    };
-                };
-            };
-            responses: {
-                /** @description Token criado com sucesso */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Token"];
-                    };
-                };
-                /** @description Não autenticado */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorNaoAutenticado"];
-                    };
-                };
-                /** @description Campos inválidos */
-                422: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorValidacao"];
-                    };
-                };
-            };
-        };
+        /** Emite um token de acesso adicional com o nome indicado */
+        post: operations["auth.criarToken"];
         delete?: never;
         options?: never;
         head?: never;
@@ -167,643 +62,37 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Listar categorias de documento (cursor pagination) */
-        get: {
-            parameters: {
-                query?: {
-                    per_page?: number;
-                    sort?: "nome" | "slug" | "tipo_movimento" | "created_at";
-                    direction?: "asc" | "desc";
-                    /** @description Filtro de estado SoftDelete */
-                    estado?: "todos" | "somente_ativos" | "somente_inativos";
-                    cursor?: string;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Lista paginada */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            data?: components["schemas"]["CategoriaDocumento"][];
-                            links?: {
-                                prev?: string | null;
-                                next?: string | null;
-                            };
-                            meta?: Record<string, never>;
-                        };
-                    };
-                };
-                401: components["schemas"]["ErrorNaoAutenticado"];
-                403: components["schemas"]["ErrorSemPermissao"];
-                422: components["schemas"]["ErrorValidacao"];
-            };
-        };
+        /** Lista as categorias de documento, com paginação por cursor */
+        get: operations["categorias-documento.index"];
         put?: never;
-        /** Criar categoria de documento */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        nome: string;
-                        slug: string;
-                        /** @enum {string} */
-                        tipo_movimento: "debito" | "credito" | "neutro";
-                    };
-                };
-            };
-            responses: {
-                /** @description Categoria criada */
-                201: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            data?: components["schemas"]["CategoriaDocumento"];
-                        };
-                    };
-                };
-                401: components["schemas"]["ErrorNaoAutenticado"];
-                403: components["schemas"]["ErrorSemPermissao"];
-                422: components["schemas"]["ErrorValidacao"];
-            };
-        };
+        /** Cria uma categoria de documento */
+        post: operations["categorias-documento.store"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/categorias-documento/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        /** Ver categoria de documento */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Categoria encontrada */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            data?: components["schemas"]["CategoriaDocumento"];
-                        };
-                    };
-                };
-                401: components["schemas"]["ErrorNaoAutenticado"];
-                403: components["schemas"]["ErrorSemPermissao"];
-                404: components["schemas"]["ErrorNaoEncontrado"];
-            };
-        };
-        /** Actualizar categoria de documento */
-        put: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        nome: string;
-                        slug: string;
-                        /** @enum {string} */
-                        tipo_movimento: "debito" | "credito" | "neutro";
-                    };
-                };
-            };
-            responses: {
-                /** @description Categoria actualizada */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            data?: components["schemas"]["CategoriaDocumento"];
-                        };
-                    };
-                };
-                401: components["schemas"]["ErrorNaoAutenticado"];
-                403: components["schemas"]["ErrorSemPermissao"];
-                404: components["schemas"]["ErrorNaoEncontrado"];
-                422: components["schemas"]["ErrorValidacao"];
-            };
-        };
-        post?: never;
-        /** Eliminar categoria de documento */
-        delete: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Eliminada com sucesso (hard delete se sem referências; soft delete se referenciada) */
-                204: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                401: components["schemas"]["ErrorNaoAutenticado"];
-                403: components["schemas"]["ErrorSemPermissao"];
-                404: components["schemas"]["ErrorNaoEncontrado"];
-            };
-        };
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/categorias-documento/{id}/restaurar": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        /** Restaurar categoria de documento soft-deleted */
-        patch: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Categoria restaurada */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            data?: components["schemas"]["CategoriaDocumento"];
-                        };
-                    };
-                };
-                401: components["schemas"]["ErrorNaoAutenticado"];
-                403: components["schemas"]["ErrorSemPermissao"];
-                404: components["schemas"]["ErrorNaoEncontrado"];
-            };
-        };
-        trace?: never;
-    };
-    "/tipos-documento": {
+    "/categorias-documento/{categorias_documento}": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Listar tipos de documento (cursor pagination) */
-        get: {
-            parameters: {
-                query?: {
-                    per_page?: number;
-                    sort?: "nome";
-                    direction?: "asc" | "desc";
-                    cursor?: string;
-                    /** @description Filtra por categoria; 422 se fornecido mas inexistente; sem filtro se omitido */
-                    id_categoria?: string;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Lista paginada */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            data?: components["schemas"]["TipoDocumento"][];
-                            links?: {
-                                prev?: string | null;
-                                next?: string | null;
-                            };
-                            meta?: Record<string, never>;
-                        };
-                    };
-                };
-                401: components["schemas"]["ErrorNaoAutenticado"];
-                403: components["schemas"]["ErrorSemPermissao"];
-                422: components["schemas"]["ErrorValidacao"];
-            };
-        };
-        put?: never;
-        /**
-         * Criar tipo de documento
-         * @description Pelo menos um dos campos espera_* tem de ser true (RN-02, validado via withValidator())
-         */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        nome: string;
-                        descricao: string;
-                        /** Format: uuid */
-                        id_categoria: string;
-                        /** @enum {string} */
-                        posicao_empresa_mae: "fornecedor" | "cliente";
-                        espera_data_documento: boolean;
-                        espera_fornecedor: boolean;
-                        espera_cliente: boolean;
-                        espera_valor: boolean;
-                    };
-                };
-            };
-            responses: {
-                /** @description Tipo de documento criado */
-                201: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            data?: components["schemas"]["TipoDocumento"];
-                        };
-                    };
-                };
-                401: components["schemas"]["ErrorNaoAutenticado"];
-                403: components["schemas"]["ErrorSemPermissao"];
-                422: components["schemas"]["ErrorValidacao"];
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/tipos-documento/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        /** Ver tipo de documento */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Tipo de documento encontrado */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            data?: components["schemas"]["TipoDocumento"];
-                        };
-                    };
-                };
-                401: components["schemas"]["ErrorNaoAutenticado"];
-                403: components["schemas"]["ErrorSemPermissao"];
-                404: components["schemas"]["ErrorNaoEncontrado"];
-            };
-        };
-        /**
-         * Actualizar tipo de documento
-         * @description Update completo (PUT semântico); pelo menos um espera_* tem de ser true (RN-02)
-         */
-        put: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        nome: string;
-                        descricao: string;
-                        /** Format: uuid */
-                        id_categoria: string;
-                        /** @enum {string} */
-                        posicao_empresa_mae: "fornecedor" | "cliente";
-                        espera_data_documento: boolean;
-                        espera_fornecedor: boolean;
-                        espera_cliente: boolean;
-                        espera_valor: boolean;
-                    };
-                };
-            };
-            responses: {
-                /** @description Tipo de documento actualizado */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            data?: components["schemas"]["TipoDocumento"];
-                        };
-                    };
-                };
-                401: components["schemas"]["ErrorNaoAutenticado"];
-                403: components["schemas"]["ErrorSemPermissao"];
-                404: components["schemas"]["ErrorNaoEncontrado"];
-                422: components["schemas"]["ErrorValidacao"];
-            };
-        };
+        /** Devolve uma categoria de documento */
+        get: operations["categorias-documento.show"];
+        /** Atualiza uma categoria de documento */
+        put: operations["categorias-documento.update"];
         post?: never;
-        /**
-         * Eliminar tipo de documento
-         * @description Hard delete definitivo — TipoDocumento não tem SoftDelete
-         */
-        delete: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Eliminado com sucesso */
-                204: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                401: components["schemas"]["ErrorNaoAutenticado"];
-                403: components["schemas"]["ErrorSemPermissao"];
-                404: components["schemas"]["ErrorNaoEncontrado"];
-            };
-        };
+        /** Elimina uma categoria de documento (eliminação reversível) */
+        delete: operations["categorias-documento.destroy"];
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/entidades": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Listar entidades (cursor pagination) */
-        get: {
-            parameters: {
-                query?: {
-                    per_page?: number;
-                    sort?: "nome" | "nif" | "created_at";
-                    direction?: "asc" | "desc";
-                    /** @description Filtro de estado SoftDelete */
-                    estado?: "todos" | "somente_ativos" | "somente_inativos";
-                    cursor?: string;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Lista paginada */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            data?: components["schemas"]["Entidade"][];
-                            links?: {
-                                prev?: string | null;
-                                next?: string | null;
-                            };
-                            meta?: Record<string, never>;
-                        };
-                    };
-                };
-                401: components["schemas"]["ErrorNaoAutenticado"];
-                403: components["schemas"]["ErrorSemPermissao"];
-            };
-        };
-        put?: never;
-        /** Criar entidade */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        nome: string;
-                        nif: string;
-                        e_cliente: boolean;
-                        e_fornecedor: boolean;
-                        e_empresa_aplicacao: boolean;
-                    };
-                };
-            };
-            responses: {
-                /** @description Entidade criada */
-                201: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            data?: components["schemas"]["Entidade"];
-                        };
-                    };
-                };
-                401: components["schemas"]["ErrorNaoAutenticado"];
-                403: components["schemas"]["ErrorSemPermissao"];
-                422: components["schemas"]["ErrorValidacao"];
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/entidades/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        /** Ver entidade */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Entidade encontrada */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            data?: components["schemas"]["Entidade"];
-                        };
-                    };
-                };
-                401: components["schemas"]["ErrorNaoAutenticado"];
-                403: components["schemas"]["ErrorSemPermissao"];
-                404: components["schemas"]["ErrorNaoEncontrado"];
-            };
-        };
-        /** Actualizar entidade */
-        put: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        nome: string;
-                        nif: string;
-                        e_cliente: boolean;
-                        e_fornecedor: boolean;
-                        e_empresa_aplicacao: boolean;
-                    };
-                };
-            };
-            responses: {
-                /** @description Entidade actualizada */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            data?: components["schemas"]["Entidade"];
-                        };
-                    };
-                };
-                401: components["schemas"]["ErrorNaoAutenticado"];
-                403: components["schemas"]["ErrorSemPermissao"];
-                404: components["schemas"]["ErrorNaoEncontrado"];
-                422: components["schemas"]["ErrorValidacao"];
-            };
-        };
-        post?: never;
-        /** Eliminar entidade */
-        delete: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Eliminada com sucesso */
-                204: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                401: components["schemas"]["ErrorNaoAutenticado"];
-                403: components["schemas"]["ErrorSemPermissao"];
-                404: components["schemas"]["ErrorNaoEncontrado"];
-            };
-        };
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/entidades/{id}/restaurar": {
+    "/categorias-documento/{categorias_documento}/restaurar": {
         parameters: {
             query?: never;
             header?: never;
@@ -816,37 +105,11 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
-        /** Restaurar entidade soft-deleted */
-        patch: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Entidade reactivada (deleted_at a null) */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            data?: components["schemas"]["Entidade"];
-                        };
-                    };
-                };
-                401: components["schemas"]["ErrorNaoAutenticado"];
-                403: components["schemas"]["ErrorSemPermissao"];
-                404: components["schemas"]["ErrorNaoEncontrado"];
-            };
-        };
+        /** Restaura uma categoria de documento eliminada */
+        patch: operations["categoriaDocumento.restaurar"];
         trace?: never;
     };
-    "/entidades/{id}/empresa-mae": {
+    "/documentos/upload": {
         parameters: {
             query?: never;
             header?: never;
@@ -855,268 +118,9 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        post?: never;
+        /** Recebe o upload de um ficheiro e inicia o processamento do documento */
+        post: operations["documento.upload"];
         delete?: never;
-        options?: never;
-        head?: never;
-        /** Converter entidade em empresa mãe */
-        patch: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Entidade convertida em empresa mãe */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            data?: components["schemas"]["Entidade"];
-                        };
-                    };
-                };
-                401: components["schemas"]["ErrorNaoAutenticado"];
-                403: components["schemas"]["ErrorSemPermissao"];
-                404: components["schemas"]["ErrorNaoEncontrado"];
-            };
-        };
-        trace?: never;
-    };
-    "/entidades/{principal}/agrupar-com/{secundaria}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Fundir entidade secundária na principal (repontar FKs + hard-delete)
-         * @description Reponta o UUID da entidade secundária para o da principal em todas as FKs conhecidas (documentos.id_fornecedor, documentos.id_cliente), une os papéis e_cliente/e_fornecedor por OR (e_empresa_aplicacao da principal fica intocado) e remove a secundária permanentemente (hard-delete, sem soft-delete). Operação atómica — falha faz rollback total. Não há fusão campo-a-campo de dados.
-         */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    principal: string;
-                    secundaria: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Entidades fundidas — devolve a principal actualizada (papéis unidos) */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            data?: components["schemas"]["Entidade"];
-                        };
-                    };
-                };
-                401: components["schemas"]["ErrorNaoAutenticado"];
-                403: components["schemas"]["ErrorSemPermissao"];
-                404: components["schemas"]["ErrorNaoEncontrado"];
-                422: components["schemas"]["ErrorValidacao"];
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/roles": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Listar roles (cursor pagination) */
-        get: {
-            parameters: {
-                query?: {
-                    per_page?: number;
-                    sort?: "name";
-                    direction?: "asc" | "desc";
-                    cursor?: string;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Lista paginada */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            data?: components["schemas"]["Role"][];
-                            links?: {
-                                prev?: string | null;
-                                next?: string | null;
-                            };
-                            meta?: Record<string, never>;
-                        };
-                    };
-                };
-                401: components["schemas"]["ErrorNaoAutenticado"];
-                403: components["schemas"]["ErrorSemPermissao"];
-            };
-        };
-        put?: never;
-        /** Criar role */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        nome: string;
-                        permissoes: string[];
-                    };
-                };
-            };
-            responses: {
-                /** @description Role criado */
-                201: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            data?: components["schemas"]["Role"];
-                        };
-                    };
-                };
-                401: components["schemas"]["ErrorNaoAutenticado"];
-                403: components["schemas"]["ErrorSemPermissao"];
-                422: components["schemas"]["ErrorValidacao"];
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/roles/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: number;
-            };
-            cookie?: never;
-        };
-        /** Ver role */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: number;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Role encontrado */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            data?: components["schemas"]["Role"];
-                        };
-                    };
-                };
-                401: components["schemas"]["ErrorNaoAutenticado"];
-                403: components["schemas"]["ErrorSemPermissao"];
-                404: components["schemas"]["ErrorNaoEncontrado"];
-            };
-        };
-        /** Actualizar role */
-        put: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: number;
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        nome?: string;
-                        permissoes: string[];
-                    };
-                };
-            };
-            responses: {
-                /** @description Role actualizado */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            data?: components["schemas"]["Role"];
-                        };
-                    };
-                };
-                401: components["schemas"]["ErrorNaoAutenticado"];
-                403: components["schemas"]["ErrorSemPermissao"];
-                404: components["schemas"]["ErrorNaoEncontrado"];
-                422: components["schemas"]["ErrorValidacao"];
-            };
-        };
-        post?: never;
-        /** Eliminar role */
-        delete: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: number;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Eliminado com sucesso */
-                204: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                401: components["schemas"]["ErrorNaoAutenticado"];
-                403: components["schemas"]["ErrorSemPermissao"];
-                404: components["schemas"]["ErrorNaoEncontrado"];
-            };
-        };
         options?: never;
         head?: never;
         patch?: never;
@@ -1129,140 +133,11 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Listar documentos (cursor pagination) */
-        get: {
-            parameters: {
-                query?: {
-                    per_page?: number;
-                    sort?: "data_documento" | "created_at";
-                    direction?: "asc" | "desc";
-                    cursor?: string;
-                    estado?: components["schemas"]["EstadoDocumento"];
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Lista paginada */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            data?: components["schemas"]["Documento"][];
-                            links?: {
-                                prev?: string | null;
-                                next?: string | null;
-                            };
-                            meta?: Record<string, never>;
-                        };
-                    };
-                };
-                401: components["schemas"]["ErrorNaoAutenticado"];
-                403: components["schemas"]["ErrorSemPermissao"];
-            };
-        };
+        /** Lista os documentos, com paginação por cursor */
+        get: operations["documentos.index"];
         put?: never;
-        /** Registar documento manual (JSON) */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        /** Format: uuid */
-                        id_fornecedor: string;
-                        /** Format: uuid */
-                        id_cliente: string;
-                        /** Format: uuid */
-                        id_categoria: string;
-                        valor: number;
-                        /** Format: date */
-                        data_documento: string;
-                    };
-                };
-            };
-            responses: {
-                /** @description Documento registado */
-                201: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            data?: components["schemas"]["Documento"];
-                        };
-                    };
-                };
-                401: components["schemas"]["ErrorNaoAutenticado"];
-                403: components["schemas"]["ErrorSemPermissao"];
-                422: components["schemas"]["ErrorValidacao"];
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/documentos/upload": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Receber upload de documento (multipart/form-data) */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "multipart/form-data": {
-                        /** Format: binary */
-                        ficheiro: string;
-                        /** Format: uuid */
-                        id_fornecedor: string;
-                        /** Format: uuid */
-                        id_cliente: string;
-                        /** Format: uuid */
-                        id_categoria: string;
-                        valor: number;
-                        /** Format: date */
-                        data_documento: string;
-                    };
-                };
-            };
-            responses: {
-                /** @description Upload recebido; documento em PENDENTE */
-                201: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            data?: components["schemas"]["Documento"];
-                        };
-                    };
-                };
-                401: components["schemas"]["ErrorNaoAutenticado"];
-                403: components["schemas"]["ErrorSemPermissao"];
-                422: components["schemas"]["ErrorValidacao"];
-            };
-        };
+        /** Regista um documento manualmente, sem upload de ficheiro */
+        post: operations["documentos.store"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1273,109 +148,33 @@ export interface paths {
         parameters: {
             query?: never;
             header?: never;
-            path: {
-                documento: string;
-            };
+            path?: never;
             cookie?: never;
         };
-        /** Ver documento */
-        get: {
-            parameters: {
-                query?: {
-                    include?: "historico";
-                };
-                header?: never;
-                path: {
-                    documento: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Documento encontrado */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            data?: components["schemas"]["Documento"];
-                        };
-                    };
-                };
-                401: components["schemas"]["ErrorNaoAutenticado"];
-                403: components["schemas"]["ErrorSemPermissao"];
-                404: components["schemas"]["ErrorNaoEncontrado"];
-            };
-        };
-        /** Corrigir documento (Processado → Processado) */
-        put: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    documento: string;
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        /** Format: uuid */
-                        id_fornecedor: string;
-                        /** Format: uuid */
-                        id_cliente: string;
-                        /** Format: uuid */
-                        id_categoria: string;
-                        valor: number;
-                        /** Format: date */
-                        data_documento: string;
-                    };
-                };
-            };
-            responses: {
-                /** @description Documento corrigido */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            data?: components["schemas"]["Documento"];
-                        };
-                    };
-                };
-                401: components["schemas"]["ErrorNaoAutenticado"];
-                403: components["schemas"]["ErrorSemPermissao"];
-                404: components["schemas"]["ErrorNaoEncontrado"];
-                422: components["schemas"]["ErrorValidacao"];
-            };
-        };
+        /** Devolve um documento e as suas etapas de processamento */
+        get: operations["documentos.show"];
+        /** Corrige os dados extraídos de um documento */
+        put: operations["documentos.update"];
         post?: never;
-        /** Eliminar documento (qualquer estado) */
-        delete: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    documento: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Eliminado com sucesso */
-                204: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                401: components["schemas"]["ErrorNaoAutenticado"];
-                403: components["schemas"]["ErrorSemPermissao"];
-                404: components["schemas"]["ErrorNaoEncontrado"];
-            };
+        /** Elimina um documento */
+        delete: operations["documentos.destroy"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/documentos/{documento}/ficheiro": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
+        /** Descarrega o ficheiro original do documento */
+        get: operations["documento.descarregar"];
+        put?: never;
+        post?: never;
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -1390,92 +189,171 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Reprocessar documento (Erro → AguardaEnvio) */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    documento: string;
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        /** @enum {string} */
-                        modo: "MODELO" | "FERRAMENTA";
-                    };
-                };
-            };
-            responses: {
-                /** @description Documento reaberto para reprocessamento */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            data?: components["schemas"]["Documento"];
-                        };
-                    };
-                };
-                401: components["schemas"]["ErrorNaoAutenticado"];
-                403: components["schemas"]["ErrorSemPermissao"];
-                404: components["schemas"]["ErrorNaoEncontrado"];
-                /** @description Transição inválida ou dados em falta */
-                422: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorTransicaoInvalida"];
-                    };
-                };
-            };
-        };
+        /** Reabre o pipeline de processamento do documento */
+        post: operations["documento.reprocessar"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/documentos/{documento}/ficheiro": {
+    "/entidades": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Descarregar ficheiro do documento */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    documento: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Stream do ficheiro */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/octet-stream": string;
-                    };
-                };
-                401: components["schemas"]["ErrorNaoAutenticado"];
-                403: components["schemas"]["ErrorSemPermissao"];
-                404: components["schemas"]["ErrorNaoEncontrado"];
-            };
+        /** Lista as entidades, com paginação por cursor */
+        get: operations["entidades.index"];
+        put?: never;
+        /** Cria uma entidade */
+        post: operations["entidades.store"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/entidades/{entidade}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
+        /** Devolve uma entidade */
+        get: operations["entidades.show"];
+        /** Atualiza uma entidade */
+        put: operations["entidades.update"];
+        post?: never;
+        /** Elimina uma entidade (eliminação reversível) */
+        delete: operations["entidades.destroy"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/entidades/{entidade}/restaurar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
         put?: never;
         post?: never;
         delete?: never;
+        options?: never;
+        head?: never;
+        /** Restaura uma entidade eliminada */
+        patch: operations["entidade.restaurar"];
+        trace?: never;
+    };
+    "/entidades/{entidade}/empresa-mae": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Marca a entidade como empresa mãe da aplicação, retirando a marcação à anterior */
+        patch: operations["entidade.converterEmEmpresaMae"];
+        trace?: never;
+    };
+    "/entidades/{principal}/agrupar-com/{secundaria}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Agrupa duas entidades duplicadas, mantendo a principal */
+        post: operations["entidade.agruparCom"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/roles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Lista os papéis e as respetivas permissões */
+        get: operations["roles.index"];
+        put?: never;
+        /** Cria um papel com o conjunto de permissões indicado */
+        post: operations["roles.store"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/roles/{role}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Devolve um papel e as suas permissões */
+        get: operations["roles.show"];
+        /** Atualiza o nome e as permissões de um papel */
+        put: operations["roles.update"];
+        post?: never;
+        /** Elimina um papel */
+        delete: operations["roles.destroy"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/tipos-documento": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Lista os tipos de documento, com paginação por cursor */
+        get: operations["tipos-documento.index"];
+        put?: never;
+        /** Cria um tipo de documento */
+        post: operations["tipos-documento.store"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/tipos-documento/{tipos_documento}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Devolve um tipo de documento */
+        get: operations["tipos-documento.show"];
+        /** Atualiza um tipo de documento */
+        put: operations["tipos-documento.update"];
+        post?: never;
+        /** Elimina um tipo de documento */
+        delete: operations["tipos-documento.destroy"];
         options?: never;
         head?: never;
         patch?: never;
@@ -1488,205 +366,37 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Listar utilizadores (cursor pagination) */
-        get: {
-            parameters: {
-                query?: {
-                    per_page?: number;
-                    sort?: "name" | "email" | "created_at";
-                    direction?: "asc" | "desc";
-                    estado?: components["schemas"]["FiltroEstadoRegisto"];
-                    cursor?: string;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Lista paginada */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            data?: components["schemas"]["Utilizador"][];
-                            links?: {
-                                prev?: string | null;
-                                next?: string | null;
-                            };
-                            meta?: Record<string, never>;
-                        };
-                    };
-                };
-                401: components["schemas"]["ErrorNaoAutenticado"];
-                403: components["schemas"]["ErrorSemPermissao"];
-            };
-        };
+        /** Lista os utilizadores, com paginação por cursor */
+        get: operations["utilizadores.index"];
         put?: never;
-        /** Criar utilizador */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        name: string;
-                        /** Format: email */
-                        email: string;
-                        /** @description Mínimo 8 caracteres, maiúsculas e minúsculas, números e símbolos */
-                        password: string;
-                        password_confirmation: string;
-                        /** @description Nome de um role existente (opcional) */
-                        role?: string | null;
-                    };
-                };
-            };
-            responses: {
-                /** @description Utilizador criado */
-                201: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            data?: components["schemas"]["Utilizador"];
-                        };
-                    };
-                };
-                401: components["schemas"]["ErrorNaoAutenticado"];
-                403: components["schemas"]["ErrorSemPermissao"];
-                422: components["schemas"]["ErrorValidacao"];
-            };
-        };
+        /** Cria um utilizador */
+        post: operations["utilizadores.store"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/utilizadores/{id}": {
+    "/utilizadores/{utilizador}": {
         parameters: {
             query?: never;
             header?: never;
-            path: {
-                id: number;
-            };
+            path?: never;
             cookie?: never;
         };
-        /** Ver utilizador (inclui inactivos; o próprio é sempre permitido) */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: number;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Utilizador encontrado */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            data?: components["schemas"]["Utilizador"];
-                        };
-                    };
-                };
-                401: components["schemas"]["ErrorNaoAutenticado"];
-                403: components["schemas"]["ErrorSemPermissao"];
-                404: components["schemas"]["ErrorNaoEncontrado"];
-            };
-        };
-        /** Actualizar utilizador (inclui inactivos) */
-        put: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: number;
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        name: string;
-                        /** Format: email */
-                        email: string;
-                        /** @description Opcional; se omitido a password não é alterada */
-                        password?: string | null;
-                        password_confirmation?: string;
-                    };
-                };
-            };
-            responses: {
-                /** @description Utilizador actualizado */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            data?: components["schemas"]["Utilizador"];
-                        };
-                    };
-                };
-                401: components["schemas"]["ErrorNaoAutenticado"];
-                403: components["schemas"]["ErrorSemPermissao"];
-                404: components["schemas"]["ErrorNaoEncontrado"];
-                422: components["schemas"]["ErrorValidacao"];
-            };
-        };
+        /** Devolve um utilizador */
+        get: operations["utilizadores.show"];
+        /** Atualiza um utilizador */
+        put: operations["utilizadores.update"];
         post?: never;
-        /** Eliminar utilizador (hard delete sem referências; soft delete se referenciado) */
-        delete: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: number;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Eliminado com sucesso (tokens revogados) */
-                204: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                401: components["schemas"]["ErrorNaoAutenticado"];
-                403: components["schemas"]["ErrorSemPermissao"];
-                404: components["schemas"]["ErrorNaoEncontrado"];
-                /** @description Auto-eliminação não permitida */
-                422: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorValidacao"];
-                    };
-                };
-            };
-        };
+        /** Elimina um utilizador (eliminação reversível) */
+        delete: operations["utilizadores.destroy"];
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/utilizadores/{id}/role": {
+    "/utilizadores/{utilizador}/role": {
         parameters: {
             query?: never;
             header?: never;
@@ -1694,37 +404,8 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
-        /** Atribuir role a um utilizador */
-        put: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: number;
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        role: string;
-                    };
-                };
-            };
-            responses: {
-                /** @description Role atribuído com sucesso */
-                204: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                401: components["schemas"]["ErrorNaoAutenticado"];
-                403: components["schemas"]["ErrorSemPermissao"];
-                404: components["schemas"]["ErrorNaoEncontrado"];
-                422: components["schemas"]["ErrorValidacao"];
-            };
-        };
+        /** Atribui um papel a um utilizador, substituindo o anterior */
+        put: operations["utilizador.atribuirRole"];
         post?: never;
         delete?: never;
         options?: never;
@@ -1732,7 +413,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/utilizadores/{id}/restaurar": {
+    "/utilizadores/{utilizador}/restaurar": {
         parameters: {
             query?: never;
             header?: never;
@@ -1745,49 +426,11 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
-        /**
-         * Restaurar utilizador soft-deleted
-         * @description Reactiva um utilizador soft-deleted. Requer a permissão `utilizadores.eliminar`. Falha com 422 se o utilizador não estava inactivo ou se está anonimizado (email `anonimizado+...`).
-         */
-        patch: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: number;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Utilizador reactivado (deleted_at a null) */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            data?: components["schemas"]["Utilizador"];
-                        };
-                    };
-                };
-                401: components["schemas"]["ErrorNaoAutenticado"];
-                403: components["schemas"]["ErrorSemPermissao"];
-                404: components["schemas"]["ErrorNaoEncontrado"];
-                /** @description Utilizador não estava inactivo, ou está anonimizado */
-                422: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorValidacao"];
-                    };
-                };
-            };
-        };
+        /** Restaura um utilizador eliminado */
+        patch: operations["utilizador.restaurar"];
         trace?: never;
     };
-    "/utilizadores/{id}/anonimizar": {
+    "/utilizadores/{utilizador}/anonimizar": {
         parameters: {
             query?: never;
             header?: never;
@@ -1796,42 +439,8 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /**
-         * Anonimizar utilizador (RGPD Art. 17.º)
-         * @description Operação irreversível: substitui os dados pessoais (`name`, `email`, `password`, `remember_token`, `email_verified_at`) por valores não-identificativos, revoga os tokens Sanctum e faz soft delete, numa única transação. Requer a permissão `utilizadores.anonimizar`. Falha com 422 na auto-anonimização ou se o utilizador já está anonimizado.
-         */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: number;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Utilizador anonimizado (dados substituídos, soft-deleted, tokens revogados) */
-                204: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                401: components["schemas"]["ErrorNaoAutenticado"];
-                403: components["schemas"]["ErrorSemPermissao"];
-                404: components["schemas"]["ErrorNaoEncontrado"];
-                /** @description Auto-anonimização não permitida, ou utilizador já anonimizado */
-                422: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorValidacao"];
-                    };
-                };
-            };
-        };
+        /** Anonimiza irreversivelmente os dados pessoais do utilizador (RGPD) */
+        post: operations["utilizador.anonimizar"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1842,148 +451,371 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /**
+         * CampoOrdenacaoCategorias
+         * @enum {string}
+         */
+        CampoOrdenacaoCategorias: "nome";
+        /**
+         * CampoOrdenacaoDocumentos
+         * @enum {string}
+         */
+        CampoOrdenacaoDocumentos: "data_documento" | "created_at";
+        /**
+         * CampoOrdenacaoEntidades
+         * @enum {string}
+         */
+        CampoOrdenacaoEntidades: "nome";
+        /**
+         * CampoOrdenacaoRoles
+         * @enum {string}
+         */
+        CampoOrdenacaoRoles: "name";
+        /**
+         * CampoOrdenacaoTiposDocumento
+         * @enum {string}
+         */
+        CampoOrdenacaoTiposDocumento: "nome";
+        /**
+         * CampoOrdenacaoUtilizadores
+         * @enum {string}
+         */
+        CampoOrdenacaoUtilizadores: "name" | "email" | "created_at";
+        /** CategoriaDocumento */
+        CategoriaDocumento: {
+            id: string;
+            nome: string;
+            slug: string;
+            tipo_movimento: components["schemas"]["TipoMovimento"];
+            deleted_at: string | null;
+        };
+        /**
+         * DirecaoOrdenacao
+         * @enum {string}
+         */
+        DirecaoOrdenacao: "asc" | "desc";
+        /** Documento */
+        Documento: {
+            id: string;
+            estado: components["schemas"]["EstadoDocumento"];
+            id_responsavel: number | null;
+            fornecedor?: components["schemas"]["Entidade"] | null;
+            cliente?: components["schemas"]["Entidade"] | null;
+            categoria?: components["schemas"]["CategoriaDocumento"] | null;
+            valor: number | null;
+            data_documento: string | null;
+            nome_ficheiro_original: string;
+            hash_sha256: string;
+            historico?: components["schemas"]["EtapaDocumento"][];
+            criado_em: string;
+            actualizado_em: string;
+        };
+        /** Entidade */
+        Entidade: {
+            id: string;
+            nome: string;
+            nif: string;
+            e_cliente: boolean;
+            e_fornecedor: boolean;
+            e_empresa_aplicacao: boolean;
+            deleted_at: string | null;
+        };
+        /**
+         * ErrorAgrupamentoInvalido
+         * @description Fusão de entidades não permitida pelas regras de negócio.
+         */
+        ErrorAgrupamentoInvalido: {
+            /** @example 422 */
+            status: number;
+            /** @example A entidade principal e a secundária têm de ser distintas. */
+            detail: string;
+        };
+        /**
+         * ErrorDemasiadosPedidos
+         * @description Limite de pedidos excedido.
+         */
+        ErrorDemasiadosPedidos: {
+            /** @example 429 */
+            status: number;
+            /** @example Demasiados pedidos. Tente novamente mais tarde. */
+            detail: string;
+        };
+        /**
+         * ErrorDocumentoDuplicado
+         * @description Já existe um documento com o mesmo conteúdo.
+         */
+        ErrorDocumentoDuplicado: {
+            /** @example 422 */
+            status: number;
+            /** @example Já existe um documento com o mesmo conteúdo (hash a1b2c3d4…). */
+            detail: string;
+        };
+        /**
+         * ErrorNaoAutenticado
+         * @description Pedido sem autenticação válida.
+         */
+        ErrorNaoAutenticado: {
+            /** @example 401 */
+            status: number;
+            /** @example Não autenticado. */
+            detail: string;
+        };
+        /**
+         * ErrorNaoEncontrado
+         * @description Recurso inexistente.
+         */
+        ErrorNaoEncontrado: {
+            /** @example 404 */
+            status: number;
+            /** @example Recurso não encontrado. */
+            detail: string;
+        };
+        /**
+         * ErrorSemPermissao
+         * @description Utilizador autenticado sem permissão para a operação.
+         */
+        ErrorSemPermissao: {
+            /** @example 403 */
+            status: number;
+            /** @example Sem permissão para aceder a este recurso. */
+            detail: string;
+        };
+        /**
+         * ErrorTransicaoInvalida
+         * @description Transição de estado do documento não permitida a partir do estado atual.
+         */
+        ErrorTransicaoInvalida: {
+            /** @example 422 */
+            status: number;
+            /** @example Transição de estado inválida: de "PROCESSADO" para "PENDENTE". */
+            detail: string;
+        };
+        /**
+         * ErrorValidacao
+         * @description Dados do pedido inválidos.
+         */
         ErrorValidacao: {
             /** @example 422 */
-            status?: number;
+            status: number;
             /** @example Os dados fornecidos são inválidos. */
-            detail?: string;
+            detail: string;
             errors?: {
                 [key: string]: string[];
             };
         };
-        ErrorNaoAutenticado: {
-            /** @example 401 */
-            status?: number;
-            /** @example Não autenticado. */
-            detail?: string;
-        };
-        ErrorNaoEncontrado: {
-            /** @example 404 */
-            status?: number;
-            /** @example Recurso não encontrado. */
-            detail?: string;
-        };
-        ErrorSemPermissao: {
-            /** @example 403 */
-            status?: number;
-            /** @example Sem permissão para aceder a este recurso. */
-            detail?: string;
-        };
-        Token: {
-            data?: {
-                /** @example 1|abc123... */
-                token?: string;
-            };
-        };
-        CategoriaDocumento: {
-            /** Format: uuid */
-            id?: string;
-            nome?: string;
-            slug?: string;
-            /** @enum {string} */
-            tipo_movimento?: "debito" | "credito" | "neutro";
-            /**
-             * Format: date-time
-             * @description ISO 8601 se inactiva; null se activa
-             */
-            deleted_at?: string | null;
-        };
-        Entidade: {
-            /** Format: uuid */
-            id?: string;
-            nome?: string;
-            nif?: string;
-            e_cliente?: boolean;
-            e_fornecedor?: boolean;
-            e_empresa_aplicacao?: boolean;
-            /**
-             * Format: date-time
-             * @description ISO 8601 se inactiva; null se activa
-             */
-            deleted_at?: string | null;
-        };
-        Role: {
-            id?: number;
-            nome?: string;
-            permissoes?: string[];
-        };
-        Utilizador: {
-            id?: number;
-            name?: string;
-            /** Format: email */
-            email?: string;
-            roles?: string[];
-            /**
-             * Format: date-time
-             * @description ISO 8601 se inactivo; null se activo
-             */
-            deleted_at?: string | null;
-            /** Format: date-time */
-            created_at?: string;
+        /**
+         * EstadoDocumento
+         * @enum {string}
+         */
+        EstadoDocumento: "PENDENTE" | "ANALISE_MALWARE" | "ANALISE_TEXTO" | "ANALISE_OCR" | "ANALISE_IA_LOCAL" | "ANALISE_CLOUD" | "PROCESSADO" | "ERRO" | "PERIGOSO";
+        /** EtapaDocumento */
+        EtapaDocumento: {
+            estado: components["schemas"]["EstadoDocumento"];
+            resultado: components["schemas"]["ResultadoEtapa"] | null;
+            motivo: string | null;
+            id_utilizador: number | null;
+            criado_em: string;
         };
         /**
-         * @description Filtro de SoftDelete nas listagens
-         * @default somente_ativos
+         * FiltroEstadoRegisto
+         * @description Filtro de estado de registo para modelos com SoftDeletes. Permite às listagens escolher se devolvem todos os registos, apenas os activos (não eliminados) ou apenas os inactivos (soft-deleted).
          * @enum {string}
          */
         FiltroEstadoRegisto: "todos" | "somente_ativos" | "somente_inativos";
-        /** @enum {string} */
-        EstadoDocumento: "PENDENTE" | "ANALISE_MALWARE" | "ANALISE_TEXTO" | "ANALISE_OCR" | "ANALISE_IA_LOCAL" | "ANALISE_CLOUD" | "PROCESSADO" | "ERRO" | "PERIGOSO";
-        /** @enum {string} */
-        ResultadoEtapa: "SUCESSO" | "FALHA" | "EM_CURSO";
-        EtapaDocumento: {
-            estado?: components["schemas"]["EstadoDocumento"];
-            resultado?: components["schemas"]["ResultadoEtapa"] | null;
-            motivo?: string | null;
-            id_utilizador?: number | null;
-            /** Format: date-time */
-            criado_em?: string;
+        /**
+         * ModoReprocessamento
+         * @description Modo de reprocessamento de um Documento em estado `Erro`. A semântica de fallback (catálogo de ferramentas, hierarquia OCR→modelos) pertence à issue de extracção — aqui o valor é apenas aceite e propagado.
+         * @enum {string}
+         */
+        ModoReprocessamento: "MODELO" | "FERRAMENTA";
+        /** PedidoAtribuirRole */
+        PedidoAtribuirRole: {
+            role: string;
         };
-        Documento: {
-            /** Format: uuid */
-            id?: string;
-            estado?: components["schemas"]["EstadoDocumento"];
-            nome_ficheiro_original?: string | null;
-            valor?: number | null;
-            /** Format: date */
-            data_documento?: string | null;
-            /** Format: uuid */
-            id_fornecedor?: string | null;
-            /** Format: uuid */
-            id_cliente?: string | null;
-            /** Format: uuid */
-            id_categoria?: string | null;
-            /** Format: date-time */
-            created_at?: string;
-            historico?: components["schemas"]["EtapaDocumento"][];
+        /** PedidoAtualizarCategoria */
+        PedidoAtualizarCategoria: {
+            nome: string;
+            slug: string;
+            tipo_movimento: components["schemas"]["TipoMovimento"];
         };
-        TipoDocumento: {
-            /** Format: uuid */
-            id?: string;
+        /** PedidoAtualizarEntidade */
+        PedidoAtualizarEntidade: {
+            nome: string;
+            nif: string;
+            e_cliente: boolean;
+            e_fornecedor: boolean;
+            e_empresa_aplicacao: boolean;
+        };
+        /** PedidoAtualizarRole */
+        PedidoAtualizarRole: {
             nome?: string;
-            descricao?: string;
-            categoria?: components["schemas"]["CategoriaDocumento"];
-            /**
-             * @description Derivado de categoria.tipo_movimento
-             * @enum {string|null}
-             */
-            tipo_movimento?: "debito" | "credito" | "neutro" | null;
-            /** @enum {string} */
-            posicao_empresa_mae?: "fornecedor" | "cliente";
-            espera_data_documento?: boolean;
-            espera_fornecedor?: boolean;
-            espera_cliente?: boolean;
-            espera_valor?: boolean;
-            /** Format: date-time */
-            criado_em?: string;
-            /** Format: date-time */
-            actualizado_em?: string;
+            permissoes: components["schemas"]["Permissao"][];
         };
-        ErrorTransicaoInvalida: {
-            /** @example 422 */
-            status?: number;
-            /** @example Transição de estado inválida: de "PROCESSADO" para "PENDENTE". */
-            detail?: string;
+        /** PedidoAtualizarTipoDocumento */
+        PedidoAtualizarTipoDocumento: {
+            nome: string;
+            descricao: string;
+            /** Format: uuid */
+            id_categoria: string;
+            posicao_empresa_mae: components["schemas"]["PosicaoEmpresaMae"];
+            espera_data_documento: boolean;
+            espera_fornecedor: boolean;
+            espera_cliente: boolean;
+            espera_valor: boolean;
+        };
+        /** PedidoAtualizarUtilizador */
+        PedidoAtualizarUtilizador: {
+            name: string;
+            /** Format: email */
+            email: string;
+            password?: string | null;
+            password_confirmation?: string | null;
+        };
+        /** PedidoAutenticacao */
+        PedidoAutenticacao: {
+            /** Format: email */
+            email: string;
+            password: string;
+        };
+        /** PedidoCorrigirDocumento */
+        PedidoCorrigirDocumento: {
+            /** Format: uuid */
+            id_fornecedor: string;
+            /** Format: uuid */
+            id_cliente: string;
+            /** Format: uuid */
+            id_categoria: string;
+            valor: number;
+            /** Format: date-time */
+            data_documento: string;
+        };
+        /** PedidoCriarCategoria */
+        PedidoCriarCategoria: {
+            nome: string;
+            slug: string;
+            tipo_movimento: components["schemas"]["TipoMovimento"];
+        };
+        /** PedidoCriarDocumentoManual */
+        PedidoCriarDocumentoManual: {
+            /** Format: uuid */
+            id_fornecedor: string;
+            /** Format: uuid */
+            id_cliente: string;
+            /** Format: uuid */
+            id_categoria: string;
+            valor: number;
+            /** Format: date-time */
+            data_documento: string;
+            /**
+             * Format: binary
+             * @description Maximum file size: 10240 kilobytes.
+             */
+            ficheiro: string;
+        };
+        /** PedidoCriarEntidade */
+        PedidoCriarEntidade: {
+            nome: string;
+            nif: string;
+            e_cliente: boolean;
+            e_fornecedor: boolean;
+            e_empresa_aplicacao: boolean;
+        };
+        /** PedidoCriarRole */
+        PedidoCriarRole: {
+            nome: string;
+            permissoes: components["schemas"]["Permissao"][];
+        };
+        /** PedidoCriarTipoDocumento */
+        PedidoCriarTipoDocumento: {
+            nome: string;
+            descricao: string;
+            /** Format: uuid */
+            id_categoria: string;
+            posicao_empresa_mae: components["schemas"]["PosicaoEmpresaMae"];
+            espera_data_documento: boolean;
+            espera_fornecedor: boolean;
+            espera_cliente: boolean;
+            espera_valor: boolean;
+        };
+        /** PedidoCriarToken */
+        PedidoCriarToken: {
+            nome_token: string;
+        };
+        /** PedidoCriarUtilizador */
+        PedidoCriarUtilizador: {
+            name: string;
+            /** Format: email */
+            email: string;
+            password: string;
+            role?: string | null;
+            password_confirmation: string;
+        };
+        /** PedidoReprocessarDocumento */
+        PedidoReprocessarDocumento: {
+            modo: components["schemas"]["ModoReprocessamento"];
+        };
+        /** PedidoUploadDocumento */
+        PedidoUploadDocumento: {
+            /**
+             * Format: binary
+             * @description Maximum file size: 51200 kilobytes.
+             */
+            ficheiro: string;
+        };
+        /**
+         * Permissao
+         * @description Catálogo de permissões do sistema. É a fonte única: uma permissão que não exista aqui não existe no sistema, porque são as policies — em código — que verificam slugs concretos. Uma permissão que nenhuma policy verifica não faz nada.  As permissões semeadas na base de dados e os cases deste enum têm de coincidir exatamente, nos dois sentidos (ver `tests/Feature/Autorizacao/CatalogoPermissoesTest.php`).  Não existe enum equivalente para os papéis: são criados em runtime com nome livre (`POST /roles`), logo o conjunto é aberto e não é um catálogo.
+         * @enum {string}
+         */
+        Permissao: "categorias-documento.ver" | "categorias-documento.criar" | "categorias-documento.atualizar" | "categorias-documento.eliminar" | "documentos.ver" | "documentos.criar" | "documentos.atualizar" | "documentos.eliminar" | "entidades.ver" | "entidades.criar" | "entidades.atualizar" | "entidades.eliminar" | "entidades.agrupar" | "roles.ver" | "roles.criar" | "roles.atualizar" | "roles.eliminar" | "tipos-documento.ver" | "tipos-documento.criar" | "tipos-documento.atualizar" | "tipos-documento.eliminar" | "utilizadores.ver" | "utilizadores.criar" | "utilizadores.atualizar" | "utilizadores.eliminar" | "utilizadores.anonimizar" | "utilizadores.atribuir-role";
+        /**
+         * PosicaoEmpresaMae
+         * @enum {string}
+         */
+        PosicaoEmpresaMae: "fornecedor" | "cliente";
+        /**
+         * ResultadoEtapa
+         * @enum {string}
+         */
+        ResultadoEtapa: "SUCESSO" | "FALHA" | "EM_CURSO";
+        /** Role */
+        Role: {
+            id: number;
+            nome: string;
+            permissoes: components["schemas"]["Permissao"][];
+        };
+        /** TipoDocumento */
+        TipoDocumento: {
+            id: string;
+            nome: string;
+            descricao: string;
+            categoria?: components["schemas"]["CategoriaDocumento"] | null;
+            tipo_movimento: components["schemas"]["TipoMovimento"] | null;
+            posicao_empresa_mae: components["schemas"]["PosicaoEmpresaMae"];
+            espera_data_documento: boolean;
+            espera_fornecedor: boolean;
+            espera_cliente: boolean;
+            espera_valor: boolean;
+            criado_em: string;
+            actualizado_em: string;
+        };
+        /**
+         * TipoMovimento
+         * @enum {string}
+         */
+        TipoMovimento: "debito" | "credito" | "neutro";
+        /** Token */
+        Token: {
+            token: string;
+        };
+        /** Utilizador */
+        Utilizador: {
+            id: number;
+            name: string;
+            email: string;
+            roles: unknown[];
+            deleted_at: string | null;
+            created_at: string;
         };
     };
     responses: never;
@@ -1993,4 +825,2383 @@ export interface components {
     pathItems: never;
 }
 export type $defs = Record<string, never>;
-export type operations = Record<string, never>;
+export interface operations {
+    "auth.login": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PedidoAutenticacao"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["Token"];
+                    };
+                };
+            };
+            /** @description Dados do pedido inválidos. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorValidacao"];
+                };
+            };
+            /** @description Limite de pedidos excedido. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDemasiadosPedidos"];
+                };
+            };
+        };
+    };
+    "auth.logout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Pedido sem autenticação válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorNaoAutenticado"];
+                };
+            };
+        };
+    };
+    "auth.criarToken": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PedidoCriarToken"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["Token"];
+                    };
+                };
+            };
+            /** @description Pedido sem autenticação válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorNaoAutenticado"];
+                };
+            };
+            /** @description Dados do pedido inválidos. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorValidacao"];
+                };
+            };
+        };
+    };
+    "categorias-documento.index": {
+        parameters: {
+            query?: {
+                per_page?: number;
+                sort?: components["schemas"]["CampoOrdenacaoCategorias"];
+                direction?: components["schemas"]["DirecaoOrdenacao"];
+                cursor?: string;
+                estado?: components["schemas"]["FiltroEstadoRegisto"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Paginated set of `CategoriaDocumento` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["CategoriaDocumento"][];
+                        links: {
+                            first: string | null;
+                            last: string | null;
+                            prev: string | null;
+                            next: string | null;
+                        };
+                        meta: {
+                            /** @description Base path for paginator generated URLs. */
+                            path: string | null;
+                            /** @description Number of items shown per page. */
+                            per_page: number;
+                            /** @description The "cursor" that points to the next set of items. */
+                            next_cursor: string | null;
+                            /** @description The "cursor" that points to the previous set of items. */
+                            prev_cursor: string | null;
+                        };
+                    };
+                };
+            };
+            /** @description Pedido sem autenticação válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorNaoAutenticado"];
+                };
+            };
+            /** @description Utilizador autenticado sem permissão para a operação. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorSemPermissao"];
+                };
+            };
+            /** @description Dados do pedido inválidos. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorValidacao"];
+                };
+            };
+        };
+    };
+    "categorias-documento.store": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PedidoCriarCategoria"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["CategoriaDocumento"];
+                    };
+                };
+            };
+            /** @description Pedido sem autenticação válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorNaoAutenticado"];
+                };
+            };
+            /** @description Utilizador autenticado sem permissão para a operação. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorSemPermissao"];
+                };
+            };
+            /** @description Dados do pedido inválidos. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorValidacao"];
+                };
+            };
+        };
+    };
+    "categorias-documento.show": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The categorias documento ID */
+                categorias_documento: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["CategoriaDocumento"];
+                    };
+                };
+            };
+            /** @description Pedido sem autenticação válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorNaoAutenticado"];
+                };
+            };
+            /** @description Utilizador autenticado sem permissão para a operação. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorSemPermissao"];
+                };
+            };
+            /** @description Recurso inexistente. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorNaoEncontrado"];
+                };
+            };
+        };
+    };
+    "categorias-documento.update": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The categorias documento ID */
+                categorias_documento: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PedidoAtualizarCategoria"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["CategoriaDocumento"];
+                    };
+                };
+            };
+            /** @description Pedido sem autenticação válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorNaoAutenticado"];
+                };
+            };
+            /** @description Utilizador autenticado sem permissão para a operação. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorSemPermissao"];
+                };
+            };
+            /** @description Recurso inexistente. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorNaoEncontrado"];
+                };
+            };
+            /** @description Dados do pedido inválidos. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorValidacao"];
+                };
+            };
+        };
+    };
+    "categorias-documento.destroy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The categorias documento ID */
+                categorias_documento: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Pedido sem autenticação válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorNaoAutenticado"];
+                };
+            };
+            /** @description Utilizador autenticado sem permissão para a operação. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorSemPermissao"];
+                };
+            };
+            /** @description Recurso inexistente. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorNaoEncontrado"];
+                };
+            };
+        };
+    };
+    "categoriaDocumento.restaurar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The categorias documento ID */
+                categorias_documento: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["CategoriaDocumento"];
+                    };
+                };
+            };
+            /** @description Pedido sem autenticação válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorNaoAutenticado"];
+                };
+            };
+            /** @description Utilizador autenticado sem permissão para a operação. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorSemPermissao"];
+                };
+            };
+            /** @description Recurso inexistente. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorNaoEncontrado"];
+                };
+            };
+        };
+    };
+    "documento.upload": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["PedidoUploadDocumento"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["Documento"];
+                    };
+                };
+            };
+            /** @description Pedido sem autenticação válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorNaoAutenticado"];
+                };
+            };
+            /** @description Utilizador autenticado sem permissão para a operação. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorSemPermissao"];
+                };
+            };
+            /** @description Dados do pedido inválidos. Já existe um documento com o mesmo conteúdo. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorValidacao"] | components["schemas"]["ErrorDocumentoDuplicado"];
+                };
+            };
+            /** @description Limite de pedidos excedido. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDemasiadosPedidos"];
+                };
+            };
+        };
+    };
+    "documentos.index": {
+        parameters: {
+            query?: {
+                per_page?: number;
+                sort?: components["schemas"]["CampoOrdenacaoDocumentos"];
+                direction?: components["schemas"]["DirecaoOrdenacao"];
+                estado?: components["schemas"]["EstadoDocumento"];
+                cursor?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Paginated set of `Documento` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["Documento"][];
+                        links: {
+                            first: string | null;
+                            last: string | null;
+                            prev: string | null;
+                            next: string | null;
+                        };
+                        meta: {
+                            /** @description Base path for paginator generated URLs. */
+                            path: string | null;
+                            /** @description Number of items shown per page. */
+                            per_page: number;
+                            /** @description The "cursor" that points to the next set of items. */
+                            next_cursor: string | null;
+                            /** @description The "cursor" that points to the previous set of items. */
+                            prev_cursor: string | null;
+                        };
+                    };
+                };
+            };
+            /** @description Pedido sem autenticação válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorNaoAutenticado"];
+                };
+            };
+            /** @description Utilizador autenticado sem permissão para a operação. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorSemPermissao"];
+                };
+            };
+            /** @description Dados do pedido inválidos. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorValidacao"];
+                };
+            };
+        };
+    };
+    "documentos.store": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["PedidoCriarDocumentoManual"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["Documento"] & Record<string, never>;
+                    };
+                };
+            };
+            /** @description Pedido sem autenticação válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorNaoAutenticado"];
+                };
+            };
+            /** @description Utilizador autenticado sem permissão para a operação. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorSemPermissao"];
+                };
+            };
+            /** @description Dados do pedido inválidos. Já existe um documento com o mesmo conteúdo. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorValidacao"] | components["schemas"]["ErrorDocumentoDuplicado"];
+                };
+            };
+        };
+    };
+    "documentos.show": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The documento ID */
+                documento: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["Documento"] & Record<string, never>;
+                    };
+                };
+            };
+            /** @description Pedido sem autenticação válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorNaoAutenticado"];
+                };
+            };
+            /** @description Utilizador autenticado sem permissão para a operação. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorSemPermissao"];
+                };
+            };
+            /** @description Recurso inexistente. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorNaoEncontrado"];
+                };
+            };
+        };
+    };
+    "documentos.update": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The documento ID */
+                documento: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PedidoCorrigirDocumento"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["Documento"] & Record<string, never>;
+                    };
+                };
+            };
+            /** @description Pedido sem autenticação válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorNaoAutenticado"];
+                };
+            };
+            /** @description Utilizador autenticado sem permissão para a operação. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorSemPermissao"];
+                };
+            };
+            /** @description Recurso inexistente. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorNaoEncontrado"];
+                };
+            };
+            /** @description Dados do pedido inválidos. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorValidacao"];
+                };
+            };
+        };
+    };
+    "documentos.destroy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The documento ID */
+                documento: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Pedido sem autenticação válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorNaoAutenticado"];
+                };
+            };
+            /** @description Utilizador autenticado sem permissão para a operação. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorSemPermissao"];
+                };
+            };
+            /** @description Recurso inexistente. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorNaoEncontrado"];
+                };
+            };
+        };
+    };
+    "documento.descarregar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The documento ID */
+                documento: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Transfer-Encoding": "chunked";
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/octet-stream": string;
+                };
+            };
+            /** @description Pedido sem autenticação válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorNaoAutenticado"];
+                };
+            };
+            /** @description Utilizador autenticado sem permissão para a operação. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorSemPermissao"];
+                };
+            };
+            /** @description Recurso inexistente. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorNaoEncontrado"];
+                };
+            };
+        };
+    };
+    "documento.reprocessar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The documento ID */
+                documento: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PedidoReprocessarDocumento"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["Documento"];
+                    };
+                };
+            };
+            /** @description Pedido sem autenticação válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorNaoAutenticado"];
+                };
+            };
+            /** @description Utilizador autenticado sem permissão para a operação. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorSemPermissao"];
+                };
+            };
+            /** @description Recurso inexistente. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorNaoEncontrado"];
+                };
+            };
+            /** @description Dados do pedido inválidos. Transição de estado do documento não permitida a partir do estado atual. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorValidacao"] | components["schemas"]["ErrorTransicaoInvalida"];
+                };
+            };
+        };
+    };
+    "entidades.index": {
+        parameters: {
+            query?: {
+                per_page?: number;
+                sort?: components["schemas"]["CampoOrdenacaoEntidades"];
+                direction?: components["schemas"]["DirecaoOrdenacao"];
+                estado?: components["schemas"]["FiltroEstadoRegisto"];
+                cursor?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Paginated set of `Entidade` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["Entidade"][];
+                        links: {
+                            first: string | null;
+                            last: string | null;
+                            prev: string | null;
+                            next: string | null;
+                        };
+                        meta: {
+                            /** @description Base path for paginator generated URLs. */
+                            path: string | null;
+                            /** @description Number of items shown per page. */
+                            per_page: number;
+                            /** @description The "cursor" that points to the next set of items. */
+                            next_cursor: string | null;
+                            /** @description The "cursor" that points to the previous set of items. */
+                            prev_cursor: string | null;
+                        };
+                    };
+                };
+            };
+            /** @description Pedido sem autenticação válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorNaoAutenticado"];
+                };
+            };
+            /** @description Utilizador autenticado sem permissão para a operação. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorSemPermissao"];
+                };
+            };
+            /** @description Dados do pedido inválidos. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorValidacao"];
+                };
+            };
+        };
+    };
+    "entidades.store": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PedidoCriarEntidade"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["Entidade"];
+                    };
+                };
+            };
+            /** @description Pedido sem autenticação válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorNaoAutenticado"];
+                };
+            };
+            /** @description Utilizador autenticado sem permissão para a operação. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorSemPermissao"];
+                };
+            };
+            /** @description Dados do pedido inválidos. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorValidacao"];
+                };
+            };
+        };
+    };
+    "entidades.show": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The entidade ID */
+                entidade: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["Entidade"];
+                    };
+                };
+            };
+            /** @description Pedido sem autenticação válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorNaoAutenticado"];
+                };
+            };
+            /** @description Utilizador autenticado sem permissão para a operação. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorSemPermissao"];
+                };
+            };
+            /** @description Recurso inexistente. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorNaoEncontrado"];
+                };
+            };
+        };
+    };
+    "entidades.update": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The entidade ID */
+                entidade: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PedidoAtualizarEntidade"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["Entidade"];
+                    };
+                };
+            };
+            /** @description Pedido sem autenticação válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorNaoAutenticado"];
+                };
+            };
+            /** @description Utilizador autenticado sem permissão para a operação. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorSemPermissao"];
+                };
+            };
+            /** @description Recurso inexistente. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorNaoEncontrado"];
+                };
+            };
+            /** @description Dados do pedido inválidos. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorValidacao"];
+                };
+            };
+        };
+    };
+    "entidades.destroy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The entidade ID */
+                entidade: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Pedido sem autenticação válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorNaoAutenticado"];
+                };
+            };
+            /** @description Utilizador autenticado sem permissão para a operação. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorSemPermissao"];
+                };
+            };
+            /** @description Recurso inexistente. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorNaoEncontrado"];
+                };
+            };
+        };
+    };
+    "entidade.restaurar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The entidade ID */
+                entidade: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["Entidade"];
+                    };
+                };
+            };
+            /** @description Pedido sem autenticação válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorNaoAutenticado"];
+                };
+            };
+            /** @description Utilizador autenticado sem permissão para a operação. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorSemPermissao"];
+                };
+            };
+            /** @description Recurso inexistente. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorNaoEncontrado"];
+                };
+            };
+        };
+    };
+    "entidade.converterEmEmpresaMae": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The entidade ID */
+                entidade: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["Entidade"];
+                    };
+                };
+            };
+            /** @description Pedido sem autenticação válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorNaoAutenticado"];
+                };
+            };
+            /** @description Utilizador autenticado sem permissão para a operação. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorSemPermissao"];
+                };
+            };
+            /** @description Recurso inexistente. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorNaoEncontrado"];
+                };
+            };
+        };
+    };
+    "entidade.agruparCom": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The principal ID */
+                principal: string;
+                /** @description The secundaria ID */
+                secundaria: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["Entidade"];
+                    };
+                };
+            };
+            /** @description Pedido sem autenticação válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorNaoAutenticado"];
+                };
+            };
+            /** @description Utilizador autenticado sem permissão para a operação. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorSemPermissao"];
+                };
+            };
+            /** @description Recurso inexistente. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorNaoEncontrado"];
+                };
+            };
+            /** @description Fusão de entidades não permitida pelas regras de negócio. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorAgrupamentoInvalido"];
+                };
+            };
+        };
+    };
+    "roles.index": {
+        parameters: {
+            query?: {
+                per_page?: number;
+                sort?: components["schemas"]["CampoOrdenacaoRoles"];
+                direction?: components["schemas"]["DirecaoOrdenacao"];
+                cursor?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Paginated set of `Role` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["Role"][];
+                        links: {
+                            first: string | null;
+                            last: string | null;
+                            prev: string | null;
+                            next: string | null;
+                        };
+                        meta: {
+                            /** @description Base path for paginator generated URLs. */
+                            path: string | null;
+                            /** @description Number of items shown per page. */
+                            per_page: number;
+                            /** @description The "cursor" that points to the next set of items. */
+                            next_cursor: string | null;
+                            /** @description The "cursor" that points to the previous set of items. */
+                            prev_cursor: string | null;
+                        };
+                    };
+                };
+            };
+            /** @description Pedido sem autenticação válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorNaoAutenticado"];
+                };
+            };
+            /** @description Utilizador autenticado sem permissão para a operação. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorSemPermissao"];
+                };
+            };
+            /** @description Dados do pedido inválidos. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorValidacao"];
+                };
+            };
+        };
+    };
+    "roles.store": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PedidoCriarRole"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["Role"];
+                    };
+                };
+            };
+            /** @description Pedido sem autenticação válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorNaoAutenticado"];
+                };
+            };
+            /** @description Utilizador autenticado sem permissão para a operação. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorSemPermissao"];
+                };
+            };
+            /** @description Dados do pedido inválidos. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorValidacao"];
+                };
+            };
+        };
+    };
+    "roles.show": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The role ID */
+                role: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["Role"];
+                    };
+                };
+            };
+            /** @description Pedido sem autenticação válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorNaoAutenticado"];
+                };
+            };
+            /** @description Utilizador autenticado sem permissão para a operação. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorSemPermissao"];
+                };
+            };
+            /** @description Recurso inexistente. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorNaoEncontrado"];
+                };
+            };
+        };
+    };
+    "roles.update": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The role ID */
+                role: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PedidoAtualizarRole"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["Role"];
+                    };
+                };
+            };
+            /** @description Pedido sem autenticação válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorNaoAutenticado"];
+                };
+            };
+            /** @description Utilizador autenticado sem permissão para a operação. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorSemPermissao"];
+                };
+            };
+            /** @description Recurso inexistente. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorNaoEncontrado"];
+                };
+            };
+            /** @description Dados do pedido inválidos. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorValidacao"];
+                };
+            };
+        };
+    };
+    "roles.destroy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The role ID */
+                role: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Pedido sem autenticação válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorNaoAutenticado"];
+                };
+            };
+            /** @description Utilizador autenticado sem permissão para a operação. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorSemPermissao"];
+                };
+            };
+            /** @description Recurso inexistente. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorNaoEncontrado"];
+                };
+            };
+        };
+    };
+    "tipos-documento.index": {
+        parameters: {
+            query?: {
+                per_page?: number;
+                sort?: components["schemas"]["CampoOrdenacaoTiposDocumento"];
+                direction?: components["schemas"]["DirecaoOrdenacao"];
+                cursor?: string;
+                id_categoria?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Paginated set of `TipoDocumento` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["TipoDocumento"][];
+                        links: {
+                            first: string | null;
+                            last: string | null;
+                            prev: string | null;
+                            next: string | null;
+                        };
+                        meta: {
+                            /** @description Base path for paginator generated URLs. */
+                            path: string | null;
+                            /** @description Number of items shown per page. */
+                            per_page: number;
+                            /** @description The "cursor" that points to the next set of items. */
+                            next_cursor: string | null;
+                            /** @description The "cursor" that points to the previous set of items. */
+                            prev_cursor: string | null;
+                        };
+                    };
+                };
+            };
+            /** @description Pedido sem autenticação válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorNaoAutenticado"];
+                };
+            };
+            /** @description Utilizador autenticado sem permissão para a operação. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorSemPermissao"];
+                };
+            };
+            /** @description Dados do pedido inválidos. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorValidacao"];
+                };
+            };
+        };
+    };
+    "tipos-documento.store": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PedidoCriarTipoDocumento"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["TipoDocumento"] & Record<string, never>;
+                    };
+                };
+            };
+            /** @description Pedido sem autenticação válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorNaoAutenticado"];
+                };
+            };
+            /** @description Utilizador autenticado sem permissão para a operação. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorSemPermissao"];
+                };
+            };
+            /** @description Dados do pedido inválidos. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorValidacao"];
+                };
+            };
+        };
+    };
+    "tipos-documento.show": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The tipos documento ID */
+                tipos_documento: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["TipoDocumento"];
+                    };
+                };
+            };
+            /** @description Pedido sem autenticação válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorNaoAutenticado"];
+                };
+            };
+            /** @description Utilizador autenticado sem permissão para a operação. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorSemPermissao"];
+                };
+            };
+            /** @description Recurso inexistente. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorNaoEncontrado"];
+                };
+            };
+        };
+    };
+    "tipos-documento.update": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The tipos documento ID */
+                tipos_documento: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PedidoAtualizarTipoDocumento"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["TipoDocumento"];
+                    };
+                };
+            };
+            /** @description Pedido sem autenticação válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorNaoAutenticado"];
+                };
+            };
+            /** @description Utilizador autenticado sem permissão para a operação. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorSemPermissao"];
+                };
+            };
+            /** @description Recurso inexistente. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorNaoEncontrado"];
+                };
+            };
+            /** @description Dados do pedido inválidos. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorValidacao"];
+                };
+            };
+        };
+    };
+    "tipos-documento.destroy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The tipos documento ID */
+                tipos_documento: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Pedido sem autenticação válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorNaoAutenticado"];
+                };
+            };
+            /** @description Utilizador autenticado sem permissão para a operação. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorSemPermissao"];
+                };
+            };
+            /** @description Recurso inexistente. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorNaoEncontrado"];
+                };
+            };
+        };
+    };
+    "utilizadores.index": {
+        parameters: {
+            query?: {
+                per_page?: number;
+                sort?: components["schemas"]["CampoOrdenacaoUtilizadores"];
+                direction?: components["schemas"]["DirecaoOrdenacao"];
+                estado?: components["schemas"]["FiltroEstadoRegisto"];
+                cursor?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Paginated set of `Utilizador` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["Utilizador"][];
+                        links: {
+                            first: string | null;
+                            last: string | null;
+                            prev: string | null;
+                            next: string | null;
+                        };
+                        meta: {
+                            /** @description Base path for paginator generated URLs. */
+                            path: string | null;
+                            /** @description Number of items shown per page. */
+                            per_page: number;
+                            /** @description The "cursor" that points to the next set of items. */
+                            next_cursor: string | null;
+                            /** @description The "cursor" that points to the previous set of items. */
+                            prev_cursor: string | null;
+                        };
+                    };
+                };
+            };
+            /** @description Pedido sem autenticação válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorNaoAutenticado"];
+                };
+            };
+            /** @description Utilizador autenticado sem permissão para a operação. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorSemPermissao"];
+                };
+            };
+            /** @description Dados do pedido inválidos. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorValidacao"];
+                };
+            };
+        };
+    };
+    "utilizadores.store": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PedidoCriarUtilizador"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["Utilizador"];
+                    };
+                };
+            };
+            /** @description Pedido sem autenticação válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorNaoAutenticado"];
+                };
+            };
+            /** @description Utilizador autenticado sem permissão para a operação. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorSemPermissao"];
+                };
+            };
+            /** @description Dados do pedido inválidos. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorValidacao"];
+                };
+            };
+        };
+    };
+    "utilizadores.show": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The utilizador ID */
+                utilizador: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["Utilizador"];
+                    };
+                };
+            };
+            /** @description Pedido sem autenticação válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorNaoAutenticado"];
+                };
+            };
+            /** @description Utilizador autenticado sem permissão para a operação. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorSemPermissao"];
+                };
+            };
+            /** @description Recurso inexistente. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorNaoEncontrado"];
+                };
+            };
+        };
+    };
+    "utilizadores.update": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The utilizador ID */
+                utilizador: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PedidoAtualizarUtilizador"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["Utilizador"];
+                    };
+                };
+            };
+            /** @description Pedido sem autenticação válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorNaoAutenticado"];
+                };
+            };
+            /** @description Utilizador autenticado sem permissão para a operação. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorSemPermissao"];
+                };
+            };
+            /** @description Recurso inexistente. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorNaoEncontrado"];
+                };
+            };
+            /** @description Dados do pedido inválidos. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorValidacao"];
+                };
+            };
+        };
+    };
+    "utilizadores.destroy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The utilizador ID */
+                utilizador: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Pedido sem autenticação válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorNaoAutenticado"];
+                };
+            };
+            /** @description Utilizador autenticado sem permissão para a operação. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorSemPermissao"];
+                };
+            };
+            /** @description Recurso inexistente. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorNaoEncontrado"];
+                };
+            };
+        };
+    };
+    "utilizador.atribuirRole": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The utilizador ID */
+                utilizador: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PedidoAtribuirRole"];
+            };
+        };
+        responses: {
+            /** @description No content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Pedido sem autenticação válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorNaoAutenticado"];
+                };
+            };
+            /** @description Utilizador autenticado sem permissão para a operação. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorSemPermissao"];
+                };
+            };
+            /** @description Recurso inexistente. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorNaoEncontrado"];
+                };
+            };
+            /** @description Dados do pedido inválidos. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorValidacao"];
+                };
+            };
+        };
+    };
+    "utilizador.restaurar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The utilizador ID */
+                utilizador: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["Utilizador"];
+                    };
+                };
+            };
+            /** @description Pedido sem autenticação válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorNaoAutenticado"];
+                };
+            };
+            /** @description Utilizador autenticado sem permissão para a operação. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorSemPermissao"];
+                };
+            };
+            /** @description Recurso inexistente. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorNaoEncontrado"];
+                };
+            };
+        };
+    };
+    "utilizador.anonimizar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The utilizador ID */
+                utilizador: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Pedido sem autenticação válida. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorNaoAutenticado"];
+                };
+            };
+            /** @description Utilizador autenticado sem permissão para a operação. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorSemPermissao"];
+                };
+            };
+            /** @description Recurso inexistente. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorNaoEncontrado"];
+                };
+            };
+        };
+    };
+}
