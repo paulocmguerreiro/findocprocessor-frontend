@@ -28,7 +28,9 @@ export class AutenticacaoService {
           if (token === '') {
             throw new Error('Autenticação sem token válido');
           }
-          this.#sessaoAtivaStore.registarSessao(token);
+        }),
+        tap((resposta) => {
+          this.#sessaoAtivaStore.registarSessao(resposta.data.token);
         }),
         catchError((erro) => {
           this.#sessaoAtivaStore.encerrarSessao();
