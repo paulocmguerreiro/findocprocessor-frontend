@@ -40,10 +40,16 @@
   configuração `production` do target `build`.
 - **RF-12:** `angular.json`, target `test`: `coverageInclude` passa a incluir
   `src/app/core/services/**/*.ts`.
-- **RF-13:** Os efeitos sobre o `SessaoAtivaStore` vivem **dentro** do stream devolvido, no caminho de
-  sucesso e no de erro (`tap`/`catchError` ou equivalente) — nunca em `finalize`. Consequência exigida:
-  se o chamador se desinscrever antes de a resposta chegar (componente destruído, navegação a meio do
-  pedido), nem `registarSessao` nem `encerrarSessao` são chamados.
+- **RF-13:** Em `efetuarAutenticacao()`, os efeitos sobre o `SessaoAtivaStore` vivem **dentro** do
+  stream devolvido, no caminho de sucesso e no de erro (`tap`/`catchError`) — nunca em `finalize`.
+  Consequência exigida: se o chamador se desinscrever antes de a resposta chegar (componente destruído,
+  navegação a meio do pedido), nem `registarSessao` nem `encerrarSessao` são chamados. **Exceção
+  deliberada em `terminarSessao()`** (2026-08-10): usa `finalize()` — `encerrarSessao()` corre em
+  sucesso, erro **e** cancelamento. Extensão da RN-03 (o logout local não depende de confirmação do
+  backend) ao cancelamento: se a intenção era terminar sessão, uma navegação a meio do pedido não deve
+  deixar a aplicação "meio autenticada" à espera de uma resposta que pode nunca chegar a ser processada.
+  A assimetria com o login é intencional — cancelar um login **não** deve autenticar; cancelar um
+  logout **deve** desautenticar.
 
 ## Requisitos não funcionais
 
@@ -91,14 +97,15 @@ Nenhum model novo. A forma do `environment`:
   backend sabe.
 - **RN-03:** O encerramento local do logout não depende da confirmação do backend. Se o token já era
   inválido no servidor, o pior cenário é encerrar uma sessão que já não existia.
-- **RN-04:** O encerramento de sessão do `terminarSessao()` ocorre sempre no **resultado** do pedido (sucesso
-  ou erro), nunca antes de este ser emitido — caso contrário o pedido sairia sem `Authorization`,
-  porque o interceptor lê o store no momento da emissão.
+- **RN-04:** O encerramento de sessão do `terminarSessao()` nunca ocorre **antes** de o pedido ser
+  emitido — caso contrário o pedido sairia sem `Authorization`, porque o interceptor lê o store no
+  momento da emissão. Ocorre sempre depois: em sucesso, erro, **ou** cancelamento (ver RF-13).
 - **RN-05:** O `AutenticacaoService` é a **única** fronteira que desembrulha `EnvelopeToken['data']['token']`
   (`04-core/sessao-ativa.md`). O store continua a receber sempre uma `string` já resolvida — e **não
   vazia**: rejeitar `''` é responsabilidade de quem chama, por decisão registada no store.
-- **RN-06:** Um pedido cancelado não é um desfecho: se o chamador desistir antes da resposta, o estado
-  de sessão fica exatamente como estava. Não há "meio termo" — só resposta ou erro alteram o store.
+- **RN-06:** Em `efetuarAutenticacao()`, um pedido cancelado não é um desfecho: se o chamador desistir
+  antes da resposta, o estado de sessão fica exatamente como estava. Não há "meio termo" — só resposta
+  ou erro alteram o store. **Não se aplica a `terminarSessao()`** — ver a exceção deliberada na RF-13.
 - **RN-07:** O serviço não interpreta o corpo do erro. O envelope `ApiError` é para a UI e para o
   futuro `errorInterceptor`; aqui o erro atravessa intacto, porque nem todo o erro traz envelope
   (5xx com HTML, `status: 0` sem corpo, 429 fora do contrato).
@@ -168,9 +175,13 @@ Nenhum model novo. A forma do `environment`:
       garante que o campo **existe**, não que não está **vazio** — `string` aceita `''` em runtime, o
       `EnvelopeToken` não impede este caso. Sem este ramo, `estaAutenticado()` ficaria `true` com
       credencial inútil, porque o store aceita `''` de propósito. _(spec)_
-- [ ] CA-16: Teste que fixa a RN-06/RF-13 — cancelamento a meio: desinscrever de `efetuarAutenticacao()` antes de
-      `flush()` não chama `registarSessao` **nem** `encerrarSessao`. É o único teste que distingue
-      `tap` de `finalize`; sem ele, trocar um pelo outro passa despercebido. _(spec)_
+- [ ] CA-16: Teste que fixa a RN-06/RF-13 — cancelamento a meio de `efetuarAutenticacao()`: desinscrever
+      antes de `flush()` não chama `registarSessao` **nem** `encerrarSessao`. É o teste que distingue
+      `tap` de `finalize` no login; sem ele, trocar um pelo outro passa despercebido. _(spec)_
+- [ ] CA-16b: Teste que fixa a exceção da RF-13 em `terminarSessao()` (2026-08-10) — cancelamento a meio:
+      desinscrever antes de `flush()` chama `encerrarSessao()` na mesma. É o teste que prova o `finalize()`
+      intencional aqui; sem ele, o comportamento assimétrico face ao login (CA-16) não estaria fixado
+      por nada além de prosa. _(spec)_
 - [ ] CA-17: Testes do ramo de erro não previsto no contrato, em `efetuarAutenticacao()` e em `terminarSessao()`: falha de
       rede/timeout (`HttpErrorResponse` com `status: 0`) e 429 do `throttle:login` — ambos chamam
       `encerrarSessao()` e repropagam, tal como o 422/401. Um teste por ramo, não um por código de

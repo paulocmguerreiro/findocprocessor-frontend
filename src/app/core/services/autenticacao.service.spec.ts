@@ -222,6 +222,16 @@ describe('AutenticacaoService', () => {
     expect(erroCapturado).toBeTruthy();
   });
 
+  it('deve_encerrar_sessao_quando_terminar_sessao_e_cancelada', () => {
+    const subscription = service.terminarSessao().subscribe();
+    const pedido = httpTestingController.expectOne(LOGOUT_URL);
+
+    subscription.unsubscribe();
+
+    expect(pedido.cancelled).toBe(true);
+    expect(sessaoAtivaStore.encerrarSessao).toHaveBeenCalledOnce();
+  });
+
   it('nao_deve_logar_dados_sensiveis_durante_autenticacao_e_logout', () => {
     const logSpy = vi.spyOn(console, 'log').mockImplementation(() => undefined);
     const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);

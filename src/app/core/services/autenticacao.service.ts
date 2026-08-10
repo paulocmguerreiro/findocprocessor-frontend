@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable, catchError, tap, throwError } from 'rxjs';
+import { Observable, catchError, finalize, tap, throwError } from 'rxjs';
 import { API_URL } from '../api-url.token';
 import type { EnvelopeToken, paths, PedidoAutenticacao } from '../../contrato';
 import { SessaoAtivaStore } from '../../state/sessao-ativa.store';
@@ -40,12 +40,6 @@ export class AutenticacaoService {
   terminarSessao(): Observable<void> {
     return this.#httpClient
       .post<void>(`${this.#apiUrl}${this.#operacaoLogoutURL}`, null)
-      .pipe(
-        tap(() => this.#sessaoAtivaStore.encerrarSessao()),
-        catchError((erro) => {
-          this.#sessaoAtivaStore.encerrarSessao();
-          return throwError(() => erro);
-        }),
-      );
+      .pipe(finalize(() => this.#sessaoAtivaStore.encerrarSessao()));
   }
 }

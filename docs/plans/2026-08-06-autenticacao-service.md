@@ -61,11 +61,14 @@
     `data`/`data.token` são obrigatórios no `EnvelopeToken`, logo já não há caso de ausência a tratar —
     só o de token vazio. No caminho de erro, `encerrarSessao()` e repropagar o erro **original**, sem o
     inspecionar.
-  - `terminarSessao(): Observable<void>` — `POST {apiUrl}/auth/logout` sem body. `encerrarSessao()` no
-    resultado, tanto em 204 como em erro. **Nunca antes de o pedido ser emitido**: o header
-    `Authorization` é anexado pelo `bearerTokenInterceptor`, que lê o store no momento da emissão.
-  - Efeitos dentro do stream (`tap`/`catchError`), **nunca `finalize`** — `finalize` correria também no
-    unsubscribe e violaria a RN-06.
+  - `terminarSessao(): Observable<void>` — `POST {apiUrl}/auth/logout` sem body. `encerrarSessao()` via
+    `finalize()` — corre em sucesso, erro **e** cancelamento (exceção deliberada à regra abaixo:
+    RN-03 estendida ao cancelamento — logout local não espera confirmação nem sequer conclusão do
+    pedido). **Nunca antes de o pedido ser emitido**: o header `Authorization` é anexado pelo
+    `bearerTokenInterceptor`, que lê o store no momento da emissão — `finalize()` só corre depois disso.
+  - Em `efetuarAutenticacao()`, efeitos dentro do stream (`tap`/`catchError`), **nunca `finalize`** —
+    aqui `finalize` correria também no unsubscribe e violaria a RN-06 (cancelar um login não deve
+    autenticar).
   - Nenhuma leitura de `tokenParaAutorizacao` — nem no serviço nem no spec (mantém a barreira ESLint
     sem exceções novas).
 - **Testes associados** (`autenticacao.service.spec.ts`, `provideHttpClientTesting()` +
@@ -79,9 +82,11 @@
   - autenticação 500 com corpo HTML → `encerrarSessao`, erro intacto, sem tocar em `error.detail`
   - terminar sessão com sucesso (204) → `encerrarSessao`; a asserção de `expectOne` passa **antes** do encerramento
   - terminar sessão 401 → `encerrarSessao` na mesma
+  - terminar sessão cancelada antes do `flush()` → `encerrarSessao` chamado na mesma (assimétrico face
+    ao cancelamento do login — prova o `finalize()` intencional)
   - `httpTesting.verify()` no `afterEach`
   - Nenhum `console.*` com `email`, `password` ou token (RNF-02)
-- **Cobre:** CA-01 a CA-07, CA-09, CA-13 a CA-18, RF-01 a RF-08, RF-13
+- **Cobre:** CA-01 a CA-07, CA-09, CA-13 a CA-18, CA-16b, RF-01 a RF-08, RF-13
 - **Commit:** `feat(core): AutenticacaoService com login/logout via SessaoAtivaStore (#12)`
 
 ## Ordem de implementação
@@ -103,11 +108,12 @@ Respeita a ordem de camadas do `CLAUDE.md`: `contrato (já gerado) → core (tok
 | `deve_encerrar_sessao_quando_autenticacao_falha_com_validacao` | unit | `autenticacao.service.spec.ts` | CA-04 — 422 `ErrorValidacao` |
 | `deve_encerrar_sessao_quando_autenticacao_devolve_token_vazio` | unit | `autenticacao.service.spec.ts` | CA-15 — `data.token === ''` |
 | `deve_encerrar_sessao_anterior_quando_nova_autenticacao_falha` | unit | `autenticacao.service.spec.ts` | CA-14 / RN-02 |
-| `nao_deve_tocar_na_sessao_quando_autenticacao_e_cancelada` | unit | `autenticacao.service.spec.ts` | CA-16 / RN-06 — fixa `tap` vs `finalize` |
+| `nao_deve_tocar_na_sessao_quando_autenticacao_e_cancelada` | unit | `autenticacao.service.spec.ts` | CA-16 / RN-06 — fixa `tap` vs `finalize` no login |
 | `deve_encerrar_sessao_quando_autenticacao_falha_por_rede_ou_excesso_de_tentativas` | unit | `autenticacao.service.spec.ts` | CA-17 — `status: 0` e 429 |
 | `deve_repropagar_erro_intacto_quando_resposta_nao_e_json` | unit | `autenticacao.service.spec.ts` | CA-18 / RN-07 — 5xx com HTML |
 | `deve_encerrar_sessao_quando_terminar_sessao_devolve_204` | unit | `autenticacao.service.spec.ts` | CA-05 + CA-13 — pedido emitido antes do encerramento |
 | `deve_encerrar_sessao_quando_terminar_sessao_falha_com_nao_autenticado` | unit | `autenticacao.service.spec.ts` | CA-06 — 401 |
+| `deve_encerrar_sessao_quando_terminar_sessao_e_cancelada` | unit | `autenticacao.service.spec.ts` | CA-16b — fixa `finalize` intencional no logout |
 
 ## Dependências
 
@@ -129,8 +135,10 @@ Respeita a ordem de camadas do `CLAUDE.md`: `contrato (já gerado) → core (tok
 - **Encerrar cedo demais parte o próprio logout.** Se `encerrarSessao()` corresse antes de o pedido ser
   emitido, este sairia sem `Authorization` e o backend responderia 401 — o serviço provocaria o erro
   que a CA-06 depois trata. A CA-13 existe para fixar esta ordem.
-- **`finalize` em vez de `tap` passa despercebido.** Ambos "funcionam" nos testes de sucesso e de erro;
-  só o teste de cancelamento (CA-16) os distingue. Sem esse teste, a troca é invisível.
+- **`finalize` em vez de `tap` passa despercebido — no login.** Ambos "funcionam" nos testes de sucesso
+  e de erro; só o teste de cancelamento (CA-16) os distingue. Sem esse teste, a troca é invisível. No
+  logout é o inverso por desenho (2026-08-10): `finalize()` é a escolha certa, e é o CA-16b que a fixa
+  — a assimetria entre os dois métodos é intencional, não uma inconsistência a "corrigir".
 - **`HttpClient` devolve Observables frios.** Os testes têm de subscrever antes de `expectOne()`, ou o
   pedido nunca é emitido e a asserção falha por razão errada.
 - **Falha de autenticação derruba a sessão anterior** (RN-02). É intencional e fica fixado por teste (CA-14),
