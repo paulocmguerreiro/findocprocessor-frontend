@@ -17,9 +17,9 @@ export const API_URL = new InjectionToken<string>("API_URL", {
 - O valor vem de `src/environments/` (ver `06-config.md`).
 - Consumido via `inject(API_URL)` nos services.
 
-| Token     | Tipo                     | Valor default (dev)  | Estado   |
-| --------- | ------------------------ | -------------------- | -------- |
-| `API_URL` | `InjectionToken<string>` | `environment.apiUrl` | pendente |
+| Token     | Tipo                     | Valor default (dev)  | Estado       | Ficheiro |
+| --------- | ------------------------ | -------------------- | ------------ | -------- |
+| `API_URL` | `InjectionToken<string>` | `environment.apiUrl` | implementado | `src/app/core/api-url.token.ts` |
 
 ## Regras
 

@@ -1,10 +1,36 @@
 # Core — Services HTTP
 
-Services em `src/app/core/services/`. Acesso HTTP à API; uma responsabilidade cada; `providedIn: 'root'`.
+Services em `src/app/core/services/`. Acesso HTTP à API; uma responsabilidade cada; `providedIn: 'root'`
+por omissão (ver exceção abaixo).
 
-_Nenhum service implementado ainda._ Documentam-se aqui à medida que forem criados.
+## Implementados
 
-## Padrão
+### `AutenticacaoService`
+
+`src/app/core/services/autenticacao.service.ts` — `efetuarAutenticacao()` (`POST /auth/login`) e
+`terminarSessao()` (`POST /auth/logout`), com os efeitos sobre o `SessaoAtivaStore`
+(`04-core/sessao-ativa.md`) dentro do stream devolvido.
+
+**Desvio deliberado ao padrão-tipo:** `@Injectable()` **sem** `providedIn: 'root'`, não `@Service()`.
+`@Service()` provisiona sempre na raiz (é sempre singleton, salvo `autoProvided: false`); este serviço é
+intencionalmente **não-singleton** — é stateless (nenhum campo de instância além das dependências
+injetadas), pelo que ter duas instâncias em componentes diferentes é inócuo, e forçar um singleton
+esconderia essa garantia. Fornecido via `providers` de quem o consome (ainda não há consumidor — nenhum
+componente de login/logout implementado nesta issue).
+
+Os dois métodos divergem deliberadamente na forma como tratam o cancelamento (`unsubscribe` antes da
+resposta chegar):
+
+| Método | Operador | Cancelamento |
+| ------ | -------- | ------------ |
+| `efetuarAutenticacao()` | `tap`/`catchError` | Não toca no store — cancelar um login não deve autenticar |
+| `terminarSessao()` | `finalize()` | Encerra a sessão na mesma — extensão do "logout local não espera confirmação do backend" ao cancelamento: uma navegação a meio do pedido não deve deixar a app "meio autenticada" |
+
+A guarda de token vazio (`data.token === ''`) vive dentro do `tap` de `efetuarAutenticacao()`: um
+`throw` síncrono no callback converte a stream numa notificação de erro, apanhada pelo `catchError`
+seguinte — não precisa de `switchMap`/`throwError` explícito para este ramo.
+
+## Padrão (novos services)
 
 ```ts
 import { inject, Service } from "@angular/core";
