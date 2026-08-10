@@ -4,7 +4,9 @@
 
 O contrato do backend define o envelope de erro (ver `contrato-api.md`). Os tipos vêm do ficheiro-índice `src/app/contrato` (`index.ts`):
 
-- Sucesso: o payload tipado do recurso (ex: `Documento`, `Documento[]`).
+- Sucesso: envelope nomeado `Envelope<Recurso>` (`{ data: Recurso }`, ex: `EnvelopeToken`,
+  `EnvelopeDocumento`) ou, paginado, `EnvelopePaginado<Recurso>` (`{ data: Recurso[], links, meta }`) —
+  ver "Recursos atualmente no contrato" em `contrato-api.md`.
 - Erro: união `ApiError` — cada variante tem `status` (número) e `detail` (string); `ErrorValidacao`
   acrescenta `errors` (mapa campo → mensagens).
 

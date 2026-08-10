@@ -18,11 +18,16 @@
 | `environment.local.ts`   | overrides locais/segredos    | **não** (gitignored) |
 
 Cada `environment` expõe pelo menos `apiUrl` (base da API), consumido pelo token `API_URL`.
+`environment.ts` aponta para o host de Valet do backend (`.../api`, prefixo real das rotas);
+`environment.production.ts` usa `apiUrl: '/api'` relativo — mesma origem, sem host fixo.
 
 ## Build
 
 - `ng build --configuration=production` — build de produção (gate de CI).
 - `angular.json` define os targets `build`/`serve`/`test`/`lint`; `styleLanguage: scss`.
+- `build.configurations.production.fileReplacements` troca `environment.ts` por
+  `environment.production.ts` — ativo por omissão, já que `defaultConfiguration` do target `build` é
+  `production`.
 
 ## Cobertura (target `test`)
 
@@ -31,7 +36,7 @@ Cada `environment` expõe pelo menos `apiUrl` (base da API), consumido pelo toke
 ```jsonc
 "options": {
   "coverage": true,
-  "coverageInclude": ["src/app/app.ts", "src/app/state/**/*.ts", "src/app/core/interceptors/**/*.ts"],
+  "coverageInclude": ["src/app/app.ts", "src/app/state/**/*.ts", "src/app/core/interceptors/**/*.ts", "src/app/core/services/**/*.ts"],
   "coverageExclude": ["src/app/contrato/**"],
   "coverageReporters": ["text"],
   "coverageThresholds": { "statements": 95, "branches": 95, "functions": 95, "lines": 95 }

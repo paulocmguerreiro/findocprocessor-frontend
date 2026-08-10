@@ -34,7 +34,19 @@ Formato: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   ativa com token não vazio; registado em `app.config.ts` via `provideHttpClient(withInterceptors([...]))`;
   `coverageInclude` alargado a `src/app/core/interceptors/**/*.ts` (#10)
 
+### Added
+- **`AutenticacaoService`** (`src/app/core/services/`) — `efetuarAutenticacao()`/`terminarSessao()` via
+  `POST /auth/login`/`/auth/logout`, com os efeitos sobre o `SessaoAtivaStore` dentro do stream
+  (`tap`/`catchError` no login; `finalize()` no logout — inclui cancelamento, extensão intencional do
+  "logout local não espera confirmação do backend"); `@Injectable()` deliberadamente não-singleton (#12)
+- `API_URL` (`InjectionToken<string>`) e `environment.ts`/`environment.production.ts`, ligados por
+  `fileReplacements` na configuração `production`; `coverageInclude` alargado a
+  `src/app/core/services/**/*.ts` (#12)
+
 ### Changed
+- Contrato: envelope de sucesso e envelope paginado promovidos a schemas nomeados no `openapi.yaml` do
+  backend (`EnvelopeToken`, `EnvelopePaginado*`, `LinksPaginacao`, `MetaPaginacao`), antes inline por
+  operação (#12)
 - Gate de CI: `ng test --watch=false` → `ng test --coverage --watch=false` (#8)
 - `CLAUDE.md` estendido (nomenclatura, tipagem, MCP `angular` obrigatório, contrato backend-first,
   `SYSTEM_SPEC_MAP`); alinhado com Angular v22 (Standalone/OnPush são defaults — não escrever explicitamente)

@@ -35,13 +35,16 @@ target `test` do `angular.json` — ver opções concretas em `06-config.md`.
 
 - **`coverageInclude`** fica restrito aos ficheiros que já têm `*.spec.ts` associado — não
   `src/app/**` inteiro. Alargar o âmbito é decisão da issue que criar código novo numa pasta ainda
-  sem testes (hoje só `src/app/app.ts` e `src/app/state/**`; o resto de `features/`, `core/`,
-  `shared/`, `models/` são pastas só com `.gitkeep`).
+  sem testes. Hoje: `src/app/app.ts`, `src/app/state/**`, `src/app/core/interceptors/**` e
+  `src/app/core/services/**` (alargado nesta issue, antes do `AutenticacaoService` — ver risco de
+  "cobertura silenciosamente não medida" em `docs/plans/2026-08-06-autenticacao-service.md`); o resto de
+  `features/`, `shared/`, `models/` são pastas só com `.gitkeep`.
 - **`coverageExclude`** cobre, no mínimo, `src/app/contrato/**` (gerado — já ignorado no ESLint).
 - **Limiares** (`coverageThresholds`) calibrados a partir da cobertura real medida sobre o
   `coverageInclude`, com margem — não o valor exato medido, para não rebentar o gate com uma linha
   pontual não coberta. Ponto de partida (2026-08-05, `app.ts` + `SessaoAtivaStore`): 100% medido,
-  limiar fixado a 95%. Revistos quando o `coverageInclude` alargar.
+  limiar fixado a 95%. Continua a 100% medido após alargar a `core/interceptors/**` e
+  `core/services/**` (2026-08-10, `AutenticacaoService`); limiar mantido a 95%.
 - **`coverage: true` é opção do target, não da invocação** — aplica-se a qualquer `ng test`
   (`--watch=false` ou não), com ou sem `--coverage` explícito no CLI. Não existe um modo "sem
   cobertura" separado enquanto essa opção estiver no `angular.json`.

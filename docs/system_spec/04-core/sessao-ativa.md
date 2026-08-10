@@ -35,10 +35,12 @@ para o TypeScript.
 
 ## Fronteira — quem desembrulha o token
 
-O store recebe sempre uma `string` já resolvida. No contrato, `Token` é `{ data?: { token?: string } }`,
-ou seja o valor útil é `string | undefined`: **desembrulhar e confirmar que existe é de quem faz o
-HTTP** (o futuro serviço de autenticação), nunca do store. Se o `undefined` escorregasse para o
-estado, `estaAutenticado` passaria a ter três valores em vez de dois.
+O store recebe sempre uma `string` já resolvida. No contrato, a resposta de `POST /auth/login` é
+`EnvelopeToken` (`{ data: { token: string } }`, ambos campos obrigatórios) — **desembrulhar
+`EnvelopeToken['data']['token']` e confirmar que não é vazio é do `AutenticacaoService`**
+(`04-core/services.md`), nunca do store. Um token vazio (`''`) continua um valor `string` válido em
+runtime mesmo com o campo obrigatório no contrato; é o `AutenticacaoService`, não este store, que
+rejeita esse caso antes de chamar `registarSessao`.
 
 ## Restrição de leitura (regra ESLint)
 
@@ -62,6 +64,8 @@ leitura do token faz `ng lint` — e portanto o CI — falhar.
 
 ## Fora de âmbito (por implementar)
 
-O serviço de autenticação (`POST /auth/login` → `registarSessao`), o interceptor que lê o token para o
-header `Authorization`, e o serviço de perfil/permissões (`GET /auth/me` — **não existe no contrato**;
-é dependência backend-first). Nada na aplicação consome este store ainda.
+O serviço de perfil/permissões (`GET /auth/me` — **não existe no contrato**; é dependência
+backend-first). O `AutenticacaoService` (`04-core/services.md`) já regista/encerra sessão via
+`registarSessao`/`encerrarSessao`, e o `bearerTokenInterceptor` (`04-core/interceptors.md`) já lê
+`tokenParaAutorizacao` para o header `Authorization` — mas nenhum componente consome ainda o store
+(sem UI de login/logout nesta issue).

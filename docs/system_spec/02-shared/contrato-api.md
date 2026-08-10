@@ -40,7 +40,13 @@ O `openapi.yaml` é obtido **sempre por URL**, nunca por caminho de ficheiro no 
 ## Recursos atualmente no contrato
 
 Schemas: `Documento` (+ `EtapaDocumento`, historico), `CategoriaDocumento`, `TipoDocumento`, `Entidade`,
-`Role`, `Utilizador`, `Token`. Pedidos (request DTOs): `PedidoAutenticacao`, `PedidoCriarToken`,
+`Role`, `Utilizador`, `Token`. Envelopes de sucesso nomeados (um por recurso, `{ data: T }`):
+`EnvelopeToken`, `EnvelopeDocumento`, `EnvelopeDocumentoComRelacoes`, `EnvelopeEntidade`,
+`EnvelopeCategoriaDocumento`, `EnvelopeTipoDocumento`, `EnvelopeTipoDocumentoComRelacoes`,
+`EnvelopeRole`, `EnvelopeUtilizador`. Envelopes paginados (`{ data: T[], links, meta }`):
+`EnvelopePaginadoDocumento`, `EnvelopePaginadoEntidade`, `EnvelopePaginadoCategoriaDocumento`,
+`EnvelopePaginadoTipoDocumento`, `EnvelopePaginadoRole`, `EnvelopePaginadoUtilizador` — com
+`LinksPaginacao`/`MetaPaginacao` partilhados. Pedidos (request DTOs): `PedidoAutenticacao`, `PedidoCriarToken`,
 `PedidoCriarCategoria`/`PedidoAtualizarCategoria`, `PedidoCriarTipoDocumento`/`PedidoAtualizarTipoDocumento`,
 `PedidoCriarEntidade`/`PedidoAtualizarEntidade`, `PedidoCriarRole`/`PedidoAtualizarRole`,
 `PedidoCriarUtilizador`/`PedidoAtualizarUtilizador`/`PedidoAtribuirRole`,
@@ -56,13 +62,24 @@ documentos (+ upload, reprocessar, descarregar), utilizadores (+ anonimizar, res
 > Valores e campos exatos: `src/app/contrato/api.generated.ts` (fonte). Não duplicar aqui — este ficheiro
 > regista **o que existe para consumir** e a data do último sync, não o corpo dos tipos.
 
-**Último sync:** 2026-08-07 (via `sync:contract:github` — Valet local indisponível). Drift desta
-sincronização: `operations` passou a ter chaves nomeadas por `operationId` (ex.: `operations["auth.login"]`,
-antes anónimas por path); parâmetros de rota `{id}` renomeados para o nome do recurso (ex.:
-`{categorias_documento}`, `{entidade}`, `{role}`, `{tipos_documento}`, `{utilizador}`) — sem impacto no
-código consumidor (`tsc --noEmit` limpo). Adições: 16 novos `Pedido*` (request DTOs, antes ausentes do
-contrato), 8 novos enums de ordenação/domínio, 3 novos envelopes de erro (`ErrorAgrupamentoInvalido`,
-`ErrorDemasiadosPedidos`, `ErrorDocumentoDuplicado`).
+**Último sync:** 2026-08-10 (via `sync:contract`, Valet — confirmado sem drift face ao ficheiro que
+originou a sincronização, obtido primeiro localmente para desbloquear a issue #12 antes do merge do
+backend; o comando canónico foi corrido depois e reproduziu exatamente o mesmo resultado, `tsc --noEmit`
+limpo). ⚠️ **A branch do backend que introduziu este delta
+(`refactor/openapi-envelopes-reutilizados`) ainda não estava publicada/mergeada em `main` nesta data** —
+um sync futuro via `sync:contract:github` (fallback, `main`) só reproduz este estado depois desse merge.
+Drift desta sincronização: envelope de sucesso (`{ data: T }`, antes inline em cada operação) e envelope
+paginado (`{ data: T[], links, meta }` + query params de listagem `per_page`/`sort`/`direction`/`cursor`,
+antes repetidos idênticos em cada `*.index`) promovidos a schemas nomeados — ver "Recursos atualmente no
+contrato" acima. Sem impacto no código consumidor além do que já usava a forma inline (`tsc --noEmit`
+limpo).
+
+**Sync anterior:** 2026-08-07 (via `sync:contract:github` — Valet local indisponível). `operations`
+passou a ter chaves nomeadas por `operationId` (ex.: `operations["auth.login"]`, antes anónimas por
+path); parâmetros de rota `{id}` renomeados para o nome do recurso (ex.: `{categorias_documento}`,
+`{entidade}`, `{role}`, `{tipos_documento}`, `{utilizador}`). Adições: 16 novos `Pedido*` (request DTOs,
+antes ausentes do contrato), 8 novos enums de ordenação/domínio, 3 novos envelopes de erro
+(`ErrorAgrupamentoInvalido`, `ErrorDemasiadosPedidos`, `ErrorDocumentoDuplicado`).
 
 ## Regras
 - Importar sempre do ficheiro-índice `src/app/contrato` (`index.ts`), nunca do gerado diretamente.
