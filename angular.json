@@ -3,9 +3,7 @@
   "version": 1,
   "cli": {
     "packageManager": "npm",
-    "schematicCollections": [
-      "angular-eslint"
-    ],
+    "schematicCollections": ["angular-eslint"],
     "analytics": "0222ce96-e1f3-4423-be1a-3575f4bd0ddf"
   },
   "newProjectRoot": "projects",
@@ -84,7 +82,8 @@
             "coverageInclude": [
               "src/app/app.ts",
               "src/app/state/**/*.ts",
-              "src/app/core/interceptors/**/*.ts"
+              "src/app/core/interceptors/**/*.ts",
+              "src/app/core/services/**/*.ts"
             ],
             "coverageExclude": ["src/app/contrato/**"],
             "coverageReporters": ["text"],
