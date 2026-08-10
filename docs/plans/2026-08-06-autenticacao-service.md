@@ -52,14 +52,15 @@
 - **O que implementar:**
   - `@Injectable()` **sem** `providedIn: 'root'`. Sem campos de instância além das dependências
     injetadas por `inject()`: `HttpClient`, `API_URL`, `SessaoAtivaStore`.
-  - Tipo do body derivado do contrato:
-    `type CredenciaisAutenticacao = paths['/auth/login']['post']['requestBody']['content']['application/json']`,
-    com `paths` importado de `../../contrato` (o ficheiro-índice já o reexporta) — nunca de
-    `api.generated.ts`. Nenhuma interface escrita à mão para a forma do body.
-  - `efetuarAutenticacao(credenciais: CredenciaisAutenticacao): Observable<Token>` — `POST {apiUrl}/auth/login`. No caminho
-    de sucesso, desembrulhar `resposta.data?.token` por guarda explícita (sem `as string`, sem `!`):
-    `string` não vazia → `registarSessao(token)`; ausente ou `''` → `encerrarSessao()` e emitir erro.
-    No caminho de erro, `encerrarSessao()` e repropagar o erro **original**, sem o inspecionar.
+  - Tipo do body: `PedidoAutenticacao`, importado diretamente de `../../contrato` (schema já nomeado
+    no contrato desde 2026-08-10 — nenhuma expressão `paths[...]` necessária). Nenhuma interface
+    escrita à mão para a forma do body.
+  - `efetuarAutenticacao(credenciais: PedidoAutenticacao): Observable<EnvelopeToken>` — `POST {apiUrl}/auth/login`.
+    No caminho de sucesso, desembrulhar `resposta.data.token` por guarda explícita (sem `as string`,
+    sem `!`): `string` não vazia → `registarSessao(token)`; `''` → `encerrarSessao()` e emitir erro.
+    `data`/`data.token` são obrigatórios no `EnvelopeToken`, logo já não há caso de ausência a tratar —
+    só o de token vazio. No caminho de erro, `encerrarSessao()` e repropagar o erro **original**, sem o
+    inspecionar.
   - `terminarSessao(): Observable<void>` — `POST {apiUrl}/auth/logout` sem body. `encerrarSessao()` no
     resultado, tanto em 204 como em erro. **Nunca antes de o pedido ser emitido**: o header
     `Authorization` é anexado pelo `bearerTokenInterceptor`, que lê o store no momento da emissão.
@@ -71,8 +72,7 @@
   `HttpTestingController`, `SessaoAtivaStore` substituído por duplo com `vi.fn()`):
   - autenticação com sucesso → `registarSessao` com o token; URL e body do pedido conferidos em `expectOne`
   - autenticação 422 `ErrorValidacao` → `encerrarSessao`, erro chega ao chamador
-  - autenticação 200 sem `data.token` → `encerrarSessao`, `registarSessao` não chamado, erro ao chamador
-  - autenticação 200 com `data.token === ''` → mesmo ramo do anterior
+  - autenticação 200 com `data.token === ''` → `encerrarSessao`, `registarSessao` não chamado, erro ao chamador
   - autenticação com sessão já registada + falha → fica encerrado, não mantém a sessão anterior
   - autenticação cancelada antes do `flush()` → nem `registarSessao` nem `encerrarSessao`
   - autenticação/terminar sessão com `status: 0` (falha de rede) e com 429 → `encerrarSessao` + repropagação
@@ -81,7 +81,7 @@
   - terminar sessão 401 → `encerrarSessao` na mesma
   - `httpTesting.verify()` no `afterEach`
   - Nenhum `console.*` com `email`, `password` ou token (RNF-02)
-- **Cobre:** CA-01 a CA-07, CA-09, CA-12 a CA-18, RF-01 a RF-08, RF-13
+- **Cobre:** CA-01 a CA-07, CA-09, CA-13 a CA-18, RF-01 a RF-08, RF-13
 - **Commit:** `feat(core): AutenticacaoService com login/logout via SessaoAtivaStore (#12)`
 
 ## Ordem de implementação
@@ -101,7 +101,6 @@ Respeita a ordem de camadas do `CLAUDE.md`: `contrato (já gerado) → core (tok
 | ----- | ---- | -------- | -------- |
 | `deve_registar_sessao_quando_autenticacao_devolve_token` | unit | `autenticacao.service.spec.ts` | CA-02, CA-03 — URL, body e `registarSessao(token)` |
 | `deve_encerrar_sessao_quando_autenticacao_falha_com_validacao` | unit | `autenticacao.service.spec.ts` | CA-04 — 422 `ErrorValidacao` |
-| `deve_encerrar_sessao_quando_autenticacao_devolve_200_sem_token` | unit | `autenticacao.service.spec.ts` | CA-12 — sem `data.token` |
 | `deve_encerrar_sessao_quando_autenticacao_devolve_token_vazio` | unit | `autenticacao.service.spec.ts` | CA-15 — `data.token === ''` |
 | `deve_encerrar_sessao_anterior_quando_nova_autenticacao_falha` | unit | `autenticacao.service.spec.ts` | CA-14 / RN-02 |
 | `nao_deve_tocar_na_sessao_quando_autenticacao_e_cancelada` | unit | `autenticacao.service.spec.ts` | CA-16 / RN-06 — fixa `tap` vs `finalize` |

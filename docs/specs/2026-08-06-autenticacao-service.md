@@ -10,18 +10,15 @@
   **sem** `providedIn: 'root'`. Dependências por `inject()`: `HttpClient`, `API_URL`, `SessaoAtivaStore`.
   Sem estado próprio — nenhum campo de instância além das dependências injetadas.
 - **RF-02:** `efetuarAutenticacao(credenciais)` emite `POST {API_URL}/auth/login` com body JSON `{ email, password }`.
-  O tipo do parâmetro deriva do contrato
-  (`paths['/auth/login']['post']['requestBody']['content']['application/json']`), importado do
-  ficheiro-índice `src/app/contrato`. Nenhuma interface escrita à mão para a forma do body.
-  O alias local `CredenciaisAutenticacao` é deliberadamente a única referência a essa expressão: quando
-  o backend nomear o schema de pedido em `components.schemas` (ver `WRN-003`), a migração é substituir
-  uma linha por um import, sem tocar no serviço nem nos testes.
-- **RF-03:** Em 200, `efetuarAutenticacao()` lê `Token['data']['token']`. Se for uma `string` **não vazia**, chama
-  `sessaoAtivaStore.registarSessao(token)` e emite a resposta ao chamador.
-- **RF-04:** Em 200 com token **ausente ou vazio** (`undefined`, `data` ausente, ou `''`), `efetuarAutenticacao()`
-  chama `sessaoAtivaStore.encerrarSessao()` e emite um erro ao chamador — a resposta não é tratada
-  como sucesso. A string vazia cai neste ramo por decisão explícita: `04-core/sessao-ativa.md` regista
-  que o store **não rejeita** `''` e delega esse juízo a quem chama — e quem chama é este serviço.
+  O tipo do parâmetro é `PedidoAutenticacao`, importado diretamente do ficheiro-índice
+  `src/app/contrato` (schema já nomeado no contrato). Nenhuma interface escrita à mão para a forma do body.
+- **RF-03:** Em 200, `efetuarAutenticacao()` lê `EnvelopeToken['data']['token']`. Se for uma `string` **não vazia**,
+  chama `sessaoAtivaStore.registarSessao(token)` e emite a resposta ao chamador.
+- **RF-04:** Em 200 com token **vazio** (`''`), `efetuarAutenticacao()` chama `sessaoAtivaStore.encerrarSessao()`
+  e emite um erro ao chamador — a resposta não é tratada como sucesso. `data` e `data.token` são
+  obrigatórios no contrato (`EnvelopeToken`), logo a ausência deixou de ser um caso a tratar; a string
+  vazia continua a cair neste ramo por decisão explícita: `04-core/sessao-ativa.md` regista que o store
+  **não rejeita** `''` e delega esse juízo a quem chama — e quem chama é este serviço.
 - **RF-05:** Em **qualquer** erro HTTP de login, `efetuarAutenticacao()` chama `sessaoAtivaStore.encerrarSessao()` e
   repropaga o erro original ao chamador, sem o transformar nem o inspecionar. O ramo é único e não
   distingue códigos: 422 `ErrorValidacao`, 429 do `throttle:login` (comportamento real do backend que
@@ -65,12 +62,14 @@
 
 | Método | Path | Request | Response |
 | ------ | ---- | ------- | -------- |
-| POST | `/auth/login` | `application/json` — `{ email: string; password: string }` | 200 `Token` (`{ data?: { token?: string } }`) · 422 `ErrorValidacao` |
+| POST | `/auth/login` | `application/json` — `PedidoAutenticacao` (`{ email: string; password: string }`) | 200 `EnvelopeToken` (`{ data: { token: string } }`, ambos obrigatórios) · 422 `ErrorValidacao` |
 | POST | `/auth/logout` | sem body | 204 sem content · 401 `ErrorNaoAutenticado` |
 
 Ambas as rotas **já existem** em `src/app/contrato/api.generated.ts` — nenhum delta de contrato,
-nenhuma dependência backend-first. Os tipos (`Token`, `ErrorValidacao`, `ErrorNaoAutenticado`, `paths`)
-importam-se do ficheiro-índice `src/app/contrato`, nunca de `api.generated.ts`.
+nenhuma dependência backend-first. Os tipos (`PedidoAutenticacao`, `EnvelopeToken`, `ErrorValidacao`,
+`ErrorNaoAutenticado`) importam-se do ficheiro-índice `src/app/contrato`, nunca de `api.generated.ts`.
+`EnvelopeToken` é um schema nomeado desde a sincronização de 2026-08-10 (antes disso, a resposta 200 do
+`auth.login` vinha inline como `{ data: Token }`, sem nome próprio no contrato).
 
 Prefixo `/api` confirmado em `routes/api.php` do backend (`Route::post('auth/login', ...)`) — faz
 parte da base URL, não dos paths compostos pelo serviço.
@@ -95,7 +94,7 @@ Nenhum model novo. A forma do `environment`:
 - **RN-04:** O encerramento de sessão do `terminarSessao()` ocorre sempre no **resultado** do pedido (sucesso
   ou erro), nunca antes de este ser emitido — caso contrário o pedido sairia sem `Authorization`,
   porque o interceptor lê o store no momento da emissão.
-- **RN-05:** O `AutenticacaoService` é a **única** fronteira que desembrulha `Token['data']['token']`
+- **RN-05:** O `AutenticacaoService` é a **única** fronteira que desembrulha `EnvelopeToken['data']['token']`
   (`04-core/sessao-ativa.md`). O store continua a receber sempre uma `string` já resolvida — e **não
   vazia**: rejeitar `''` é responsabilidade de quem chama, por decisão registada no store.
 - **RN-06:** Um pedido cancelado não é um desfecho: se o chamador desistir antes da resposta, o estado
@@ -114,7 +113,7 @@ Nenhum model novo. A forma do `environment`:
 | ------------------ | ------- |
 | Que `apiUrl` fica em `environment.ts`? | Host de Valet: `http://findocprocessor-backend-laravel.test/api` — o mesmo host que `npm run sync:contract` já usa |
 | `environment.production.ts` + `fileReplacements` entram nesta issue? | **Sim** — âmbito alargado por decisão no Checkpoint A. Produção serve da mesma origem, logo `apiUrl: '/api'` (relativo, sem host). O `/api` mantém-se porque é o prefixo real das rotas do backend, não uma escolha de ambiente |
-| O que faz `efetuarAutenticacao()` perante um 200 sem `data.token`? | Trata como falha: `encerrarSessao()` + erro propagado ao chamador. Uma sessão válida implica token devolvido; sem token, um pedido subsequente seria barrado pelo Sanctum de qualquer forma — melhor falhar aqui, de forma visível, do que ficar num estado "autenticado" inútil |
+| O que faz `efetuarAutenticacao()` perante um 200 com `data.token === ''`? | Trata como falha: `encerrarSessao()` + erro propagado ao chamador. Uma sessão válida implica token utilizável; string vazia não o é, e um pedido subsequente seria barrado pelo Sanctum de qualquer forma — melhor falhar aqui, de forma visível, do que ficar num estado "autenticado" inútil. **Nota (2026-08-10):** `data`/`data.token` passaram a obrigatórios no contrato (`EnvelopeToken`) — o caso "200 sem token" deixou de existir como possibilidade tipada; só sobra o de token vazio |
 | Que forma tem a API pública de `efetuarAutenticacao()`/`terminarSessao()`? | `Observable` devolvido ao chamador (default do projeto: `HttpClient` para leituras e mutações), com os efeitos de sessão dentro do stream. Subscrição e tratamento de erro de UI ficam para o futuro componente de login |
 | Alargar `coverageInclude`? | **Sim** — `src/app/core/services/**/*.ts` entra no âmbito de cobertura nesta issue |
 | Que edge cases reais cobrir a este nível? _(levantada no Checkpoint B)_ | Os que uma implementação plausível erraria em silêncio e que o mock consegue provar: token vazio (CA-15), cancelamento a meio (CA-16), rede/timeout e 429 fora do contrato (CA-17), 5xx com corpo HTML (CA-18). **Fora deste nível** — valor do `apiUrl`, CORS, Sanctum real, SSE, `fileReplacements` — registado em `WRN-002` para uma camada e2e em issue própria. Testar "URL incorreto" aqui é teatro: o `expectOne()` prova a *composição* do URL, nunca o valor do `apiUrl` |
@@ -138,7 +137,7 @@ Nenhum model novo. A forma do `environment`:
       não como singleton global. `inject(HttpClient)`, `inject(API_URL)`. _(issue)_
 - [ ] CA-02: `efetuarAutenticacao(credenciais)` faz `POST /auth/login` com body `{ email, password }`, com o tipo do
       body extraído do contrato — sem duplicar a forma à mão. _(issue)_
-- [ ] CA-03: Em 200, desembrulha `Token['data']['token']`, confirma que existe e chama
+- [ ] CA-03: Em 200, desembrulha `EnvelopeToken['data']['token']`, confirma que não é vazio e chama
       `registarSessao(token)`. Só o `AutenticacaoService` faz este desembrulhar. _(issue)_
 - [ ] CA-04: Em erro de login (422 ou falha de rede), chama `encerrarSessao()` antes de repropagar o
       erro. _(issue)_
@@ -154,17 +153,21 @@ Nenhum model novo. A forma do `environment`:
       levar a `apiUrl` de dev. _(spec)_
 - [ ] CA-11: `coverageInclude` do target `test` inclui `src/app/core/services/**/*.ts`; o relatório de
       `ng test --coverage --watch=false` mostra `autenticacao.service.ts` e o limiar de 95% mantém-se. _(spec)_
-- [ ] CA-12: Teste que fixa o 200 sem `data.token`: `encerrarSessao()` chamado, `registarSessao` **não**
-      chamado, erro entregue ao chamador. _(spec)_
+- [x] ~~CA-12: Teste que fixa o 200 sem `data.token`~~ — **removido em 2026-08-10.** `data` e
+      `data.token` passaram a obrigatórios no `EnvelopeToken` do contrato (sincronização de hoje); "200
+      sem token" deixou de ser uma resposta que o backend possa emitir sem violar o próprio contrato.
+      O caso de token **vazio** (`''`, presente mas inútil) continua coberto pelo CA-15 — ver nota aí.
 - [ ] CA-13: Teste que fixa a ordem no `terminarSessao()`: o pedido é emitido (e a asserção de `expectOne`
       passa) **antes** de `encerrarSessao()` ser chamado — o encerramento acontece no resultado, nunca
       antes da emissão. _(spec)_
 - [ ] CA-14: Teste que fixa a RN-02: com sessão já registada, um login falhado deixa o store encerrado
       (`encerrarSessao()` chamado), não a sessão anterior intacta. _(spec)_
-- [ ] CA-15: Teste que fixa o token **vazio**: 200 com `data.token === ''` segue o mesmo ramo do token
-      ausente — `encerrarSessao()` chamado, `registarSessao` **não** chamado, erro ao chamador. Sem
-      este ramo, `estaAutenticado()` ficaria `true` com credencial inútil, porque o store aceita `''`
-      de propósito. _(spec)_
+- [ ] CA-15: Teste que fixa o token **vazio**: 200 com `data.token === ''` — `encerrarSessao()` chamado,
+      `registarSessao` **não** chamado, erro ao chamador. **Mantido** (2026-08-10, ao contrário do que o
+      `workflow-state.md` previa remover a par do CA-12): `data.token` ser obrigatório no contrato
+      garante que o campo **existe**, não que não está **vazio** — `string` aceita `''` em runtime, o
+      `EnvelopeToken` não impede este caso. Sem este ramo, `estaAutenticado()` ficaria `true` com
+      credencial inútil, porque o store aceita `''` de propósito. _(spec)_
 - [ ] CA-16: Teste que fixa a RN-06/RF-13 — cancelamento a meio: desinscrever de `efetuarAutenticacao()` antes de
       `flush()` não chama `registarSessao` **nem** `encerrarSessao`. É o único teste que distingue
       `tap` de `finalize`; sem ele, trocar um pelo outro passa despercebido. _(spec)_
