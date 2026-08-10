@@ -520,6 +520,78 @@ export interface components {
             e_empresa_aplicacao: boolean;
             deleted_at: string | null;
         };
+        /** EnvelopeCategoriaDocumento */
+        EnvelopeCategoriaDocumento: {
+            data: components["schemas"]["CategoriaDocumento"];
+        };
+        /** EnvelopeDocumento */
+        EnvelopeDocumento: {
+            data: components["schemas"]["Documento"];
+        };
+        /** EnvelopeDocumentoComRelacoes */
+        EnvelopeDocumentoComRelacoes: {
+            data: components["schemas"]["Documento"] & Record<string, never>;
+        };
+        /** EnvelopeEntidade */
+        EnvelopeEntidade: {
+            data: components["schemas"]["Entidade"];
+        };
+        /** EnvelopePaginadoCategoriaDocumento */
+        EnvelopePaginadoCategoriaDocumento: {
+            data: components["schemas"]["CategoriaDocumento"][];
+            links: components["schemas"]["LinksPaginacao"];
+            meta: components["schemas"]["MetaPaginacao"];
+        };
+        /** EnvelopePaginadoDocumento */
+        EnvelopePaginadoDocumento: {
+            data: components["schemas"]["Documento"][];
+            links: components["schemas"]["LinksPaginacao"];
+            meta: components["schemas"]["MetaPaginacao"];
+        };
+        /** EnvelopePaginadoEntidade */
+        EnvelopePaginadoEntidade: {
+            data: components["schemas"]["Entidade"][];
+            links: components["schemas"]["LinksPaginacao"];
+            meta: components["schemas"]["MetaPaginacao"];
+        };
+        /** EnvelopePaginadoRole */
+        EnvelopePaginadoRole: {
+            data: components["schemas"]["Role"][];
+            links: components["schemas"]["LinksPaginacao"];
+            meta: components["schemas"]["MetaPaginacao"];
+        };
+        /** EnvelopePaginadoTipoDocumento */
+        EnvelopePaginadoTipoDocumento: {
+            data: components["schemas"]["TipoDocumento"][];
+            links: components["schemas"]["LinksPaginacao"];
+            meta: components["schemas"]["MetaPaginacao"];
+        };
+        /** EnvelopePaginadoUtilizador */
+        EnvelopePaginadoUtilizador: {
+            data: components["schemas"]["Utilizador"][];
+            links: components["schemas"]["LinksPaginacao"];
+            meta: components["schemas"]["MetaPaginacao"];
+        };
+        /** EnvelopeRole */
+        EnvelopeRole: {
+            data: components["schemas"]["Role"];
+        };
+        /** EnvelopeTipoDocumento */
+        EnvelopeTipoDocumento: {
+            data: components["schemas"]["TipoDocumento"];
+        };
+        /** EnvelopeTipoDocumentoComRelacoes */
+        EnvelopeTipoDocumentoComRelacoes: {
+            data: components["schemas"]["TipoDocumento"] & Record<string, never>;
+        };
+        /** EnvelopeToken */
+        EnvelopeToken: {
+            data: components["schemas"]["Token"];
+        };
+        /** EnvelopeUtilizador */
+        EnvelopeUtilizador: {
+            data: components["schemas"]["Utilizador"];
+        };
         /**
          * ErrorAgrupamentoInvalido
          * @description Fusão de entidades não permitida pelas regras de negócio.
@@ -622,6 +694,24 @@ export interface components {
          * @enum {string}
          */
         FiltroEstadoRegisto: "todos" | "somente_ativos" | "somente_inativos";
+        /** LinksPaginacao */
+        LinksPaginacao: {
+            first: string | null;
+            last: string | null;
+            prev: string | null;
+            next: string | null;
+        };
+        /** MetaPaginacao */
+        MetaPaginacao: {
+            /** @description Base path for paginator generated URLs. */
+            path: string | null;
+            /** @description Number of items shown per page. */
+            per_page: number;
+            /** @description The "cursor" that points to the next set of items. */
+            next_cursor: string | null;
+            /** @description The "cursor" that points to the previous set of items. */
+            prev_cursor: string | null;
+        };
         /**
          * ModoReprocessamento
          * @description Modo de reprocessamento de um Documento em estado `Erro`. A semântica de fallback (catálogo de ferramentas, hierarquia OCR→modelos) pertence à issue de extracção — aqui o valor é apenas aceite e propagado.
@@ -819,7 +909,12 @@ export interface components {
         };
     };
     responses: never;
-    parameters: never;
+    parameters: {
+        ParametroCursor: string;
+        ParametroDirecao: components["schemas"]["DirecaoOrdenacao"];
+        ParametroEstadoRegisto: components["schemas"]["FiltroEstadoRegisto"];
+        ParametroPorPagina: number;
+    };
     requestBodies: never;
     headers: never;
     pathItems: never;
@@ -844,9 +939,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        data: components["schemas"]["Token"];
-                    };
+                    "application/json": components["schemas"]["EnvelopeToken"];
                 };
             };
             /** @description Dados do pedido inválidos. */
@@ -914,9 +1007,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        data: components["schemas"]["Token"];
-                    };
+                    "application/json": components["schemas"]["EnvelopeToken"];
                 };
             };
             /** @description Pedido sem autenticação válida. */
@@ -942,11 +1033,11 @@ export interface operations {
     "categorias-documento.index": {
         parameters: {
             query?: {
-                per_page?: number;
+                per_page?: components["parameters"]["ParametroPorPagina"];
                 sort?: components["schemas"]["CampoOrdenacaoCategorias"];
-                direction?: components["schemas"]["DirecaoOrdenacao"];
-                cursor?: string;
-                estado?: components["schemas"]["FiltroEstadoRegisto"];
+                direction?: components["parameters"]["ParametroDirecao"];
+                cursor?: components["parameters"]["ParametroCursor"];
+                estado?: components["parameters"]["ParametroEstadoRegisto"];
             };
             header?: never;
             path?: never;
@@ -960,25 +1051,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        data: components["schemas"]["CategoriaDocumento"][];
-                        links: {
-                            first: string | null;
-                            last: string | null;
-                            prev: string | null;
-                            next: string | null;
-                        };
-                        meta: {
-                            /** @description Base path for paginator generated URLs. */
-                            path: string | null;
-                            /** @description Number of items shown per page. */
-                            per_page: number;
-                            /** @description The "cursor" that points to the next set of items. */
-                            next_cursor: string | null;
-                            /** @description The "cursor" that points to the previous set of items. */
-                            prev_cursor: string | null;
-                        };
-                    };
+                    "application/json": components["schemas"]["EnvelopePaginadoCategoriaDocumento"];
                 };
             };
             /** @description Pedido sem autenticação válida. */
@@ -1028,9 +1101,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        data: components["schemas"]["CategoriaDocumento"];
-                    };
+                    "application/json": components["schemas"]["EnvelopeCategoriaDocumento"];
                 };
             };
             /** @description Pedido sem autenticação válida. */
@@ -1079,9 +1150,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        data: components["schemas"]["CategoriaDocumento"];
-                    };
+                    "application/json": components["schemas"]["EnvelopeCategoriaDocumento"];
                 };
             };
             /** @description Pedido sem autenticação válida. */
@@ -1134,9 +1203,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        data: components["schemas"]["CategoriaDocumento"];
-                    };
+                    "application/json": components["schemas"]["EnvelopeCategoriaDocumento"];
                 };
             };
             /** @description Pedido sem autenticação válida. */
@@ -1242,9 +1309,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        data: components["schemas"]["CategoriaDocumento"];
-                    };
+                    "application/json": components["schemas"]["EnvelopeCategoriaDocumento"];
                 };
             };
             /** @description Pedido sem autenticação válida. */
@@ -1294,9 +1359,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        data: components["schemas"]["Documento"];
-                    };
+                    "application/json": components["schemas"]["EnvelopeDocumento"];
                 };
             };
             /** @description Pedido sem autenticação válida. */
@@ -1340,11 +1403,11 @@ export interface operations {
     "documentos.index": {
         parameters: {
             query?: {
-                per_page?: number;
+                per_page?: components["parameters"]["ParametroPorPagina"];
                 sort?: components["schemas"]["CampoOrdenacaoDocumentos"];
-                direction?: components["schemas"]["DirecaoOrdenacao"];
+                direction?: components["parameters"]["ParametroDirecao"];
                 estado?: components["schemas"]["EstadoDocumento"];
-                cursor?: string;
+                cursor?: components["parameters"]["ParametroCursor"];
             };
             header?: never;
             path?: never;
@@ -1358,25 +1421,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        data: components["schemas"]["Documento"][];
-                        links: {
-                            first: string | null;
-                            last: string | null;
-                            prev: string | null;
-                            next: string | null;
-                        };
-                        meta: {
-                            /** @description Base path for paginator generated URLs. */
-                            path: string | null;
-                            /** @description Number of items shown per page. */
-                            per_page: number;
-                            /** @description The "cursor" that points to the next set of items. */
-                            next_cursor: string | null;
-                            /** @description The "cursor" that points to the previous set of items. */
-                            prev_cursor: string | null;
-                        };
-                    };
+                    "application/json": components["schemas"]["EnvelopePaginadoDocumento"];
                 };
             };
             /** @description Pedido sem autenticação válida. */
@@ -1426,9 +1471,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        data: components["schemas"]["Documento"] & Record<string, never>;
-                    };
+                    "application/json": components["schemas"]["EnvelopeDocumentoComRelacoes"];
                 };
             };
             /** @description Pedido sem autenticação válida. */
@@ -1477,9 +1520,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        data: components["schemas"]["Documento"] & Record<string, never>;
-                    };
+                    "application/json": components["schemas"]["EnvelopeDocumentoComRelacoes"];
                 };
             };
             /** @description Pedido sem autenticação válida. */
@@ -1532,9 +1573,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        data: components["schemas"]["Documento"] & Record<string, never>;
-                    };
+                    "application/json": components["schemas"]["EnvelopeDocumentoComRelacoes"];
                 };
             };
             /** @description Pedido sem autenticação válida. */
@@ -1694,9 +1733,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        data: components["schemas"]["Documento"];
-                    };
+                    "application/json": components["schemas"]["EnvelopeDocumento"];
                 };
             };
             /** @description Pedido sem autenticação válida. */
@@ -1740,11 +1777,11 @@ export interface operations {
     "entidades.index": {
         parameters: {
             query?: {
-                per_page?: number;
+                per_page?: components["parameters"]["ParametroPorPagina"];
                 sort?: components["schemas"]["CampoOrdenacaoEntidades"];
-                direction?: components["schemas"]["DirecaoOrdenacao"];
-                estado?: components["schemas"]["FiltroEstadoRegisto"];
-                cursor?: string;
+                direction?: components["parameters"]["ParametroDirecao"];
+                estado?: components["parameters"]["ParametroEstadoRegisto"];
+                cursor?: components["parameters"]["ParametroCursor"];
             };
             header?: never;
             path?: never;
@@ -1758,25 +1795,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        data: components["schemas"]["Entidade"][];
-                        links: {
-                            first: string | null;
-                            last: string | null;
-                            prev: string | null;
-                            next: string | null;
-                        };
-                        meta: {
-                            /** @description Base path for paginator generated URLs. */
-                            path: string | null;
-                            /** @description Number of items shown per page. */
-                            per_page: number;
-                            /** @description The "cursor" that points to the next set of items. */
-                            next_cursor: string | null;
-                            /** @description The "cursor" that points to the previous set of items. */
-                            prev_cursor: string | null;
-                        };
-                    };
+                    "application/json": components["schemas"]["EnvelopePaginadoEntidade"];
                 };
             };
             /** @description Pedido sem autenticação válida. */
@@ -1826,9 +1845,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        data: components["schemas"]["Entidade"];
-                    };
+                    "application/json": components["schemas"]["EnvelopeEntidade"];
                 };
             };
             /** @description Pedido sem autenticação válida. */
@@ -1877,9 +1894,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        data: components["schemas"]["Entidade"];
-                    };
+                    "application/json": components["schemas"]["EnvelopeEntidade"];
                 };
             };
             /** @description Pedido sem autenticação válida. */
@@ -1932,9 +1947,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        data: components["schemas"]["Entidade"];
-                    };
+                    "application/json": components["schemas"]["EnvelopeEntidade"];
                 };
             };
             /** @description Pedido sem autenticação válida. */
@@ -2040,9 +2053,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        data: components["schemas"]["Entidade"];
-                    };
+                    "application/json": components["schemas"]["EnvelopeEntidade"];
                 };
             };
             /** @description Pedido sem autenticação válida. */
@@ -2091,9 +2102,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        data: components["schemas"]["Entidade"];
-                    };
+                    "application/json": components["schemas"]["EnvelopeEntidade"];
                 };
             };
             /** @description Pedido sem autenticação válida. */
@@ -2144,9 +2153,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        data: components["schemas"]["Entidade"];
-                    };
+                    "application/json": components["schemas"]["EnvelopeEntidade"];
                 };
             };
             /** @description Pedido sem autenticação válida. */
@@ -2190,10 +2197,10 @@ export interface operations {
     "roles.index": {
         parameters: {
             query?: {
-                per_page?: number;
+                per_page?: components["parameters"]["ParametroPorPagina"];
                 sort?: components["schemas"]["CampoOrdenacaoRoles"];
-                direction?: components["schemas"]["DirecaoOrdenacao"];
-                cursor?: string;
+                direction?: components["parameters"]["ParametroDirecao"];
+                cursor?: components["parameters"]["ParametroCursor"];
             };
             header?: never;
             path?: never;
@@ -2207,25 +2214,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        data: components["schemas"]["Role"][];
-                        links: {
-                            first: string | null;
-                            last: string | null;
-                            prev: string | null;
-                            next: string | null;
-                        };
-                        meta: {
-                            /** @description Base path for paginator generated URLs. */
-                            path: string | null;
-                            /** @description Number of items shown per page. */
-                            per_page: number;
-                            /** @description The "cursor" that points to the next set of items. */
-                            next_cursor: string | null;
-                            /** @description The "cursor" that points to the previous set of items. */
-                            prev_cursor: string | null;
-                        };
-                    };
+                    "application/json": components["schemas"]["EnvelopePaginadoRole"];
                 };
             };
             /** @description Pedido sem autenticação válida. */
@@ -2275,9 +2264,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        data: components["schemas"]["Role"];
-                    };
+                    "application/json": components["schemas"]["EnvelopeRole"];
                 };
             };
             /** @description Pedido sem autenticação válida. */
@@ -2326,9 +2313,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        data: components["schemas"]["Role"];
-                    };
+                    "application/json": components["schemas"]["EnvelopeRole"];
                 };
             };
             /** @description Pedido sem autenticação válida. */
@@ -2381,9 +2366,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        data: components["schemas"]["Role"];
-                    };
+                    "application/json": components["schemas"]["EnvelopeRole"];
                 };
             };
             /** @description Pedido sem autenticação válida. */
@@ -2475,10 +2458,10 @@ export interface operations {
     "tipos-documento.index": {
         parameters: {
             query?: {
-                per_page?: number;
+                per_page?: components["parameters"]["ParametroPorPagina"];
                 sort?: components["schemas"]["CampoOrdenacaoTiposDocumento"];
-                direction?: components["schemas"]["DirecaoOrdenacao"];
-                cursor?: string;
+                direction?: components["parameters"]["ParametroDirecao"];
+                cursor?: components["parameters"]["ParametroCursor"];
                 id_categoria?: string;
             };
             header?: never;
@@ -2493,25 +2476,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        data: components["schemas"]["TipoDocumento"][];
-                        links: {
-                            first: string | null;
-                            last: string | null;
-                            prev: string | null;
-                            next: string | null;
-                        };
-                        meta: {
-                            /** @description Base path for paginator generated URLs. */
-                            path: string | null;
-                            /** @description Number of items shown per page. */
-                            per_page: number;
-                            /** @description The "cursor" that points to the next set of items. */
-                            next_cursor: string | null;
-                            /** @description The "cursor" that points to the previous set of items. */
-                            prev_cursor: string | null;
-                        };
-                    };
+                    "application/json": components["schemas"]["EnvelopePaginadoTipoDocumento"];
                 };
             };
             /** @description Pedido sem autenticação válida. */
@@ -2561,9 +2526,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        data: components["schemas"]["TipoDocumento"] & Record<string, never>;
-                    };
+                    "application/json": components["schemas"]["EnvelopeTipoDocumentoComRelacoes"];
                 };
             };
             /** @description Pedido sem autenticação válida. */
@@ -2612,9 +2575,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        data: components["schemas"]["TipoDocumento"];
-                    };
+                    "application/json": components["schemas"]["EnvelopeTipoDocumento"];
                 };
             };
             /** @description Pedido sem autenticação válida. */
@@ -2667,9 +2628,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        data: components["schemas"]["TipoDocumento"];
-                    };
+                    "application/json": components["schemas"]["EnvelopeTipoDocumento"];
                 };
             };
             /** @description Pedido sem autenticação válida. */
@@ -2761,11 +2720,11 @@ export interface operations {
     "utilizadores.index": {
         parameters: {
             query?: {
-                per_page?: number;
+                per_page?: components["parameters"]["ParametroPorPagina"];
                 sort?: components["schemas"]["CampoOrdenacaoUtilizadores"];
-                direction?: components["schemas"]["DirecaoOrdenacao"];
-                estado?: components["schemas"]["FiltroEstadoRegisto"];
-                cursor?: string;
+                direction?: components["parameters"]["ParametroDirecao"];
+                estado?: components["parameters"]["ParametroEstadoRegisto"];
+                cursor?: components["parameters"]["ParametroCursor"];
             };
             header?: never;
             path?: never;
@@ -2779,25 +2738,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        data: components["schemas"]["Utilizador"][];
-                        links: {
-                            first: string | null;
-                            last: string | null;
-                            prev: string | null;
-                            next: string | null;
-                        };
-                        meta: {
-                            /** @description Base path for paginator generated URLs. */
-                            path: string | null;
-                            /** @description Number of items shown per page. */
-                            per_page: number;
-                            /** @description The "cursor" that points to the next set of items. */
-                            next_cursor: string | null;
-                            /** @description The "cursor" that points to the previous set of items. */
-                            prev_cursor: string | null;
-                        };
-                    };
+                    "application/json": components["schemas"]["EnvelopePaginadoUtilizador"];
                 };
             };
             /** @description Pedido sem autenticação válida. */
@@ -2847,9 +2788,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        data: components["schemas"]["Utilizador"];
-                    };
+                    "application/json": components["schemas"]["EnvelopeUtilizador"];
                 };
             };
             /** @description Pedido sem autenticação válida. */
@@ -2898,9 +2837,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        data: components["schemas"]["Utilizador"];
-                    };
+                    "application/json": components["schemas"]["EnvelopeUtilizador"];
                 };
             };
             /** @description Pedido sem autenticação válida. */
@@ -2953,9 +2890,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        data: components["schemas"]["Utilizador"];
-                    };
+                    "application/json": components["schemas"]["EnvelopeUtilizador"];
                 };
             };
             /** @description Pedido sem autenticação válida. */
@@ -3122,9 +3057,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        data: components["schemas"]["Utilizador"];
-                    };
+                    "application/json": components["schemas"]["EnvelopeUtilizador"];
                 };
             };
             /** @description Pedido sem autenticação válida. */

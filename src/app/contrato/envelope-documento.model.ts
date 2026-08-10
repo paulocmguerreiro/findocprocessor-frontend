@@ -4,4 +4,4 @@
 // Alterações manuais PERDEM-SE na próxima sincronização: npm run sync:contract
 import type { components } from './api.generated';
 
-export type PedidoAtualizarEntidade = components['schemas']['PedidoAtualizarEntidade'];
+export type EnvelopeDocumento = components['schemas']['EnvelopeDocumento'];
