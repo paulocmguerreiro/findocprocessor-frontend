@@ -20,6 +20,7 @@ forem construídas (ver `01-features/README.md`).
 | Ciclo de estados do documento    | `02-shared/estados.md`                 |
 | Padrão — componentes             | `02-shared/padroes-componentes.md`     |
 | Padrão — signal stores           | `02-shared/padroes-signals.md`         |
+| Padrão — tema (cores light/dark) | `02-shared/tema-cores.md`              |
 
 ## Models (`03-models/`)
 

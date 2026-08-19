@@ -7,6 +7,12 @@ Formato: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ## [Unreleased]
 
 ### Added
+- **Tema Angular Material + Tailwind CSS v4** — `mat.theme()` (paleta `violet`/`blue`, `theme-type:
+  color-scheme`) ligado a uma paleta própria "Frapuccine" (Catppuccin Latte/Frappé) em
+  `src/styles/cores.scss`, com alternância claro/escuro nativa via `color-scheme: light dark` +
+  `light-dark()` (sem JS/toggle); Tailwind CSS v4 via `@tailwindcss/postcss` (`.postcssrc.json`,
+  `src/tailwind.css`) como stylesheet global separado; `index.html` passa a carregar Roboto + Material
+  Icons via Google Fonts
 - **`SessaoAtivaStore`** (`src/app/state/`) — primeiro signal store do projeto: guarda o bearer token da
   sessão em memória (sem persistência), expõe-o em leitura readonly e deriva `estaAutenticado` por
   `computed()`. Sem HTTP e sem dependências injetadas (#5)

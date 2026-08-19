@@ -1,0 +1,14 @@
+// Paleta "Frapuccine" — Light: Catppuccin Latte · Dark: Catppuccin Frappé.
+// A alternância segue a preferência do sistema (`color-scheme: light dark` + `light-dark()`).
+:root {
+  color-scheme: light dark;
+
+  --cor-fundo: light-dark(#eff1f5, #303446);
+  --cor-texto: light-dark(#4c4f69, #c6d0f5);
+  --cor-primaria: light-dark(#8839ef, #ca9ee6);
+  --cor-destaque: light-dark(#1e66f5, #8caaee);
+  --cor-sucesso: light-dark(#40a02b, #a6d189);
+  --cor-perigo: light-dark(#d20f39, #e78284);
+  --cor-aviso: light-dark(#df8e1d, #e5c890);
+  --cor-sobre-primaria: light-dark(#eff1f5, #232634);
+}
