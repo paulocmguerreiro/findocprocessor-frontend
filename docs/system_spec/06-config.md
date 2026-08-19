@@ -65,6 +65,32 @@ Detalhe e motivo do nome não-renomeável: `04-core/sessao-ativa.md`.
 Linting **sem** informação de tipos (`tseslint.configs.recommended`, sem `projectService`): regras de
 projeto novas têm de ser puramente sintáticas.
 
+## Tema (Angular Material + Tailwind)
+
+Dependencies (`package.json`):
+
+- `@angular/material` + `@angular/cdk` — Angular Material, temado via `mat.theme()` em `styles.scss`
+  (paleta `violet`/`blue`, `theme-type: color-scheme`), com `$overrides` a apontar para as custom
+  properties de `src/styles/cores.scss`. Padrão de cores/light-dark: `02-shared/tema-cores.md`.
+- `tailwindcss` + `@tailwindcss/postcss` + `postcss` — Tailwind CSS v4 via plugin PostCSS, sem ficheiro
+  `tailwind.config` (v4 é config-less por omissão). Configuração do plugin em `.postcssrc.json` (raiz
+  do projeto):
+  ```json
+  { "plugins": { "@tailwindcss/postcss": {} } }
+  ```
+- `src/tailwind.css` — ponto de entrada único do Tailwind (`@import "tailwindcss";`).
+
+`angular.json`, target `build` → `styles`:
+```jsonc
+"styles": ["src/tailwind.css", "src/styles.scss"]
+```
+Ordem importa: Tailwind primeiro, `styles.scss` (tema Material + paleta) depois, para as regras do
+tema poderem sobrepor-se a utilitários base do Tailwind quando colidirem.
+
+`src/index.html` carrega, via Google Fonts (`<link rel="preconnect">` + stylesheet), a fonte **Roboto**
+(pesos 300/400/500) e o pacote **Material Icons** — dependências externas assumidas pelo schematic
+`ng add @angular/material`, sem self-host.
+
 ## Sincronização de contrato
 
 - `npm run sync:contract` (Valet, preferencial) / `npm run sync:contract:github` (fallback via raw do GitHub)

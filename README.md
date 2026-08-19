@@ -33,6 +33,8 @@
 - **Zoneless change detection** (`provideZonelessChangeDetection()`)
 - **HttpClient** para leituras e mutações (sem `httpResource`)
 - **SCSS**; template e estilos sempre em ficheiros separados
+- **Angular Material** (temado via `mat.theme()`) + **Tailwind CSS v4**; paleta light/dark nativa
+  (`color-scheme` + `light-dark()`, sem JS) — [`docs/system_spec/02-shared/tema-cores.md`](docs/system_spec/02-shared/tema-cores.md)
 - **Vitest** (runner por omissão desde Angular 21)
 - Tipos da API **gerados** do contrato do backend (`openapi-typescript`)
 
